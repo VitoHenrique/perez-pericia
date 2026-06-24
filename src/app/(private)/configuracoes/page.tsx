@@ -6,7 +6,7 @@ import { useModal } from '@/components/ModalProvider';
 
 export default function ConfiguracoesPage() {
   const { showAlert } = useModal();
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('dark');
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [userRole, setUserRole] = useState('');
@@ -16,7 +16,7 @@ export default function ConfiguracoesPage() {
 
   useEffect(() => {
     // Get Theme
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'dark';
     setTheme(savedTheme);
 
     // Get User info
