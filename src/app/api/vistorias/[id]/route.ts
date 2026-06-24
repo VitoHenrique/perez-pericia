@@ -1,0 +1,41 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const vistoria = await prisma.vistoria.findUnique({
+      where: { id },
+      include: {
+        processo: true
+      }
+    });
+
+    if (!vistoria) {
+      return NextResponse.json({ error: 'Vistoria não encontrada.' }, { status: 404 });
+    }
+
+    if (user.role !== 'admin' && vistoria.processo.usuario_id !== user.id) {
+      return NextResponse.json({ error: 'Acesso negado.' }, { status: 403 });
+    }
+
+    await prisma.vistoria.delete({
+      where: { id }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Erro ao excluir vistoria:', error);
+    return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
+  }
+}

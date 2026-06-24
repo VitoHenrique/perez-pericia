@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  admin
+  perito
+  assistente
+}
+
+enum Status {
+  backlog
+  aguardando_doc
+  diligencia
+  elaboracao
+  revisao
+  concluido
+}
+
+enum StatusPagamento {
+  pendente
+  parcial
+  pago
+}
+
+model Usuario {
+  id           String     @id @default(uuid())
+  nome         String
+  email        String     @unique
+  senha_hash   String
+  role         Role       @default(perito)
+  data_criacao DateTime   @default(now())
+  processos    Processo[]
+}
+
+model Processo {
+  id              String      @id @default(uuid())
+  usuario_id      String
+  usuario         Usuario     @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  numero_processo String
+  vara_comarca    String
+  tipo_pericia    String
+  status          Status      @default(backlog)
+  data_nomeacao   DateTime
+  prazo_entrega   DateTime
+  descricao       String?
+  honorarios      Honorario[]
+  documentos      Documento[]
+  vistorias       Vistoria[]
+}
+
+model Honorario {
+  id               String          @id @default(uuid())
+  processo_id      String
+  processo         Processo        @relation(fields: [processo_id], references: [id], onDelete: Cascade)
+  valor_total      Float
+  valor_recebido   Float           @default(0)
+  status_pagamento StatusPagamento @default(pendente)
+  data_vencimento  DateTime
+}
+
+model Documento {
+  id           String   @id @default(uuid())
+  processo_id  String
+  processo     Processo @relation(fields: [processo_id], references: [id], onDelete: Cascade)
+  nome_arquivo String
+  url_arquivo  String
+  data_upload  DateTime @default(now())
+}
+
+model Vistoria {
+  id          String   @id @default(uuid())
+  processo_id String
+  processo    Processo @relation(fields: [processo_id], references: [id], onDelete: Cascade)
+  data        String
+  hora        String
+  endereco    String
+  contato     String
+}
+

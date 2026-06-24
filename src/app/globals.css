@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+:root, [data-theme="light"] {
+  /* Light Theme - Coursue Design */
+  --background: #f1f3f5;
+  --foreground: #1a202c;
+  
+  --card: #ffffff;
+  --card-foreground: #1a202c;
+  
+  --primary: #6b46c1;
+  --primary-foreground: #ffffff;
+  
+  --secondary: #a78bfa;
+  --secondary-foreground: #1a202c;
+  
+  --muted: #edf2f7;
+  --muted-foreground: #718096;
+  
+  --border: #dbdfe7;
+  --input: #dbdfe7;
+  --ring: #6b46c1;
+  
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  
+  --radius: 0.5rem;
+}
+
+.dark, [data-theme="dark"] {
+  /* Dark Theme - Sleek Dark Gray with Purple Accents */
+  --background: #121214;
+  --foreground: #f3f4f6;
+  
+  --card: #1e1e22;
+  --card-foreground: #f3f4f6;
+  
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  
+  --secondary: #a78bfa;
+  --secondary-foreground: #121214;
+  
+  --muted: #2d2d34;
+  --muted-foreground: #9ca3af;
+  
+  --border: #2a2a30;
+  --input: #2a2a30;
+  --ring: #8b5cf6;
+  
+  --success: #34d399;
+  --success-foreground: #121214;
+  
+  --warning: #fbbf24;
+  --warning-foreground: #121214;
+  
+  --destructive: #f87171;
+  --destructive-foreground: #121214;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --radius-xl: var(--radius);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, .font-outfit {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+/* Glassmorphism Fintech-Grade */
+.glass-effect {
+  background: rgba(252, 252, 252, 0.8);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dark .glass-effect {
+  background: rgba(18, 18, 21, 0.8);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Flat Table Styling (Stripe Style) */
+.fintech-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fintech-table th {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.fintech-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--foreground);
+}
+
+.fintech-table tr:hover td {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.dark .fintech-table tr:hover td {
+  background: rgba(255, 255, 255, 0.008);
+}
+
+/* Thin Border Utility */
+.border-thin {
+  border: 1px solid var(--border);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Active indicator pulse */
+.active-pulse {
+  position: relative;
+}
+.active-pulse::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 25%;
+  height: 50%;
+  width: 3px;
+  background-color: var(--primary);
+  border-radius: 0 4px 4px 0;
+}
