@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
 
 export async function POST(request: Request) {
   try {
@@ -25,20 +23,11 @@ export async function POST(request: Request) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
     
-    // Criar diretório se não existir
-    await mkdir(uploadDir, { recursive: true });
-
-    // Nome único para evitar conflitos
-    const extension = file.name.split('.').pop() || 'png';
-    const uniqueFilename = `perfil-${user.id}-${Date.now()}.${extension}`;
-    const filePath = join(uploadDir, uniqueFilename);
-    
-    await writeFile(filePath, buffer);
-
-    const url = `/uploads/${uniqueFilename}`;
+    // Converte a imagem para Base64 Data URL para salvar diretamente no banco de dados,
+    // resolvendo o erro de EROFS (sistema de arquivos somente leitura) na Vercel.
+    const base64Image = buffer.toString('base64');
+    const url = `data:${file.type};base64,${base64Image}`;
 
     // Atualizar no banco de dados
     await prisma.usuario.update({
