@@ -89,6 +89,7 @@ interface Processo {
   usuario?: {
     nome: string;
     role: string;
+    foto_url?: string | null;
   };
 }
 
@@ -434,9 +435,17 @@ export default function DashboardPage() {
 
                   {/* Mentor footer */}
                   <div className="flex items-center gap-2 border-t border-border/40 pt-2 text-[10px]">
-                    <div className={`w-5.5 h-5.5 rounded-full ${p.usuario?.nome ? getColorClass(p.usuario.nome) : 'bg-indigo-50 text-primary'} flex items-center justify-center font-bold text-[9px] shrink-0 border border-primary/20`}>
-                      {p.usuario?.nome ? getInitials(p.usuario.nome) : 'FP'}
-                    </div>
+                    {p.usuario?.foto_url ? (
+                      <img
+                        src={p.usuario.foto_url}
+                        alt={p.usuario.nome}
+                        className="w-5.5 h-5.5 rounded-full object-cover shrink-0 border border-primary/20 shadow-sm"
+                      />
+                    ) : (
+                      <div className={`w-5.5 h-5.5 rounded-full ${p.usuario?.nome ? getColorClass(p.usuario.nome) : 'bg-indigo-50 text-primary'} flex items-center justify-center font-bold text-[9px] shrink-0 border border-primary/20`}>
+                        {p.usuario?.nome ? getInitials(p.usuario.nome) : 'FP'}
+                      </div>
+                    )}
                     <div className="flex flex-col min-w-0">
                       <span className="font-bold text-foreground truncate leading-tight">
                         {p.usuario?.nome || 'Fernando Perez'}

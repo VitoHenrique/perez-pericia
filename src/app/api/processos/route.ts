@@ -43,6 +43,7 @@ export async function GET(request: Request) {
             nome: true,
             email: true,
             role: true,
+            foto_url: true,
           }
         }
       },
