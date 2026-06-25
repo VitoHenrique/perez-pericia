@@ -79,8 +79,8 @@ export async function getCurrentUser() {
 export function hasPermission(user: any, requiredPermissions: string[]): boolean {
   if (!user) return false;
   
-  // Administrador has bypass (always has all permissions)
-  if (user.role === 'admin' || user.cargo?.nome === 'Administrador') {
+  // Desenvolvedor has bypass (always has all permissions)
+  if (user.role === 'admin' || user.cargo?.nome === 'Desenvolvedor') {
     return true;
   }
 

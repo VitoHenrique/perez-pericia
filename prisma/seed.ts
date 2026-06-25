@@ -42,12 +42,22 @@ async function main() {
   // 2. Criar cargos (Roles)
   console.log('Criando cargos...');
   
-  // 2.1 Administrador
-  const adminCargo = await prisma.cargo.upsert({
+  // 2.1 Desenvolvedor (antigo Administrador)
+  const existingAdmin = await prisma.cargo.findUnique({
     where: { nome: 'Administrador' },
+  });
+  if (existingAdmin) {
+    await prisma.cargo.update({
+      where: { nome: 'Administrador' },
+      data: { nome: 'Desenvolvedor' },
+    });
+  }
+
+  const adminCargo = await prisma.cargo.upsert({
+    where: { nome: 'Desenvolvedor' },
     update: { descricao: 'Controle total sobre todos os recursos e configurações do escritório.' },
     create: {
-      nome: 'Administrador',
+      nome: 'Desenvolvedor',
       descricao: 'Controle total sobre todos os recursos e configurações do escritório.',
     },
   });

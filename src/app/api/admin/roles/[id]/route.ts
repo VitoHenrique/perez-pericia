@@ -28,9 +28,9 @@ export async function PUT(
       return NextResponse.json({ error: 'Cargo não encontrado.' }, { status: 404 });
     }
 
-    // Não permitir renomear o cargo de Administrador padrão para evitar problemas de sistema
-    if (existingCargo.nome === 'Administrador' && nome !== 'Administrador') {
-      return NextResponse.json({ error: 'Não é permitido renomear o cargo de Administrador.' }, { status: 400 });
+    // Não permitir renomear o cargo de Desenvolvedor padrão para evitar problemas de sistema
+    if (existingCargo.nome === 'Desenvolvedor' && nome !== 'Desenvolvedor') {
+      return NextResponse.json({ error: 'Não é permitido renomear o cargo de Desenvolvedor.' }, { status: 400 });
     }
 
     // Executar atualização em transação
@@ -107,7 +107,7 @@ export async function DELETE(
     }
 
     // Bloquear exclusões críticas
-    if (cargo.nome === 'Administrador' || cargo.nome === 'Perito' || cargo.nome === 'Assistente') {
+    if (cargo.nome === 'Desenvolvedor' || cargo.nome === 'Perito' || cargo.nome === 'Assistente') {
       return NextResponse.json({ error: 'Cargos do sistema não podem ser excluídos.' }, { status: 400 });
     }
 

@@ -198,7 +198,7 @@ export default function CargosPage() {
   };
 
   const handleDeleteCargo = async (cargo: Cargo) => {
-    if (cargo.nome === 'Administrador' || cargo.nome === 'Perito' || cargo.nome === 'Assistente') {
+    if (cargo.nome === 'Desenvolvedor' || cargo.nome === 'Perito' || cargo.nome === 'Assistente') {
       showAlert('Os cargos principais do sistema não podem ser excluídos.', 'Ação Bloqueada');
       return;
     }
@@ -288,7 +288,7 @@ export default function CargosPage() {
       {/* Cargos Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cargos.map((cargo) => {
-          const isSystemRole = ['Administrador', 'Perito', 'Assistente'].includes(cargo.nome);
+          const isSystemRole = ['Desenvolvedor', 'Perito', 'Assistente'].includes(cargo.nome);
           
           return (
             <motion.div 
@@ -432,7 +432,7 @@ export default function CargosPage() {
                     <input
                       type="text"
                       required
-                      disabled={submitLoading || (modalMode === 'edit' && selectedCargo?.nome === 'Administrador')}
+                      disabled={submitLoading || (modalMode === 'edit' && selectedCargo?.nome === 'Desenvolvedor')}
                       placeholder="Ex: Auxiliar de Laudos"
                       value={formData.nome}
                       onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
