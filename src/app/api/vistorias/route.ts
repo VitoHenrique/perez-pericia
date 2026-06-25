@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, hasPermission } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 
 export async function GET() {
@@ -8,6 +8,10 @@ export async function GET() {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    if (!hasPermission(user, ['vistorias.view'])) {
+      return NextResponse.json({ error: 'Acesso negado: sem permissão para visualizar vistorias' }, { status: 403 });
     }
 
     const whereClause: any = {};
@@ -50,6 +54,10 @@ export async function POST(req: Request) {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    if (!hasPermission(user, ['vistorias.create'])) {
+      return NextResponse.json({ error: 'Acesso negado: sem permissão para agendar vistorias' }, { status: 403 });
     }
 
     const { processoId, data, hora, endereco, contato } = await req.json();

@@ -14,24 +14,45 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { role } = body;
+    const { cargoId } = body;
 
-    if (!role || !['admin', 'perito', 'assistente'].includes(role)) {
-      return NextResponse.json({ error: 'Perfil inválido.' }, { status: 400 });
+    if (!cargoId) {
+      return NextResponse.json({ error: 'Cargo é obrigatório.' }, { status: 400 });
     }
 
-    if (id === user.id && role !== 'admin') {
+    const cargo = await prisma.cargo.findUnique({
+      where: { id: cargoId },
+    });
+
+    if (!cargo) {
+      return NextResponse.json({ error: 'Cargo não encontrado.' }, { status: 404 });
+    }
+
+    // Mapear o enum legado baseado no nome do novo cargo
+    let resolvedLegacyRole: any = 'perito';
+    const cargoNomeLower = cargo.nome.toLowerCase();
+    if (cargoNomeLower.includes('admin')) {
+      resolvedLegacyRole = 'admin';
+    } else if (cargoNomeLower.includes('assistente')) {
+      resolvedLegacyRole = 'assistente';
+    }
+
+    if (id === user.id && resolvedLegacyRole !== 'admin') {
       return NextResponse.json({ error: 'Você não pode revogar seus próprios privilégios de administrador.' }, { status: 400 });
     }
 
     const updatedUser = await prisma.usuario.update({
       where: { id },
-      data: { role: role as any },
+      data: { 
+        cargoId,
+        role: resolvedLegacyRole 
+      },
       select: {
         id: true,
         nome: true,
         email: true,
         role: true,
+        cargoId: true,
       },
     });
 

@@ -15,6 +15,13 @@ export async function GET() {
         nome: true,
         email: true,
         role: true,
+        cargoId: true,
+        cargo: {
+          select: {
+            id: true,
+            nome: true,
+          },
+        },
         data_criacao: true,
         _count: {
           select: { processos: true },

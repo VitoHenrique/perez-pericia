@@ -236,26 +236,49 @@ export default function Sidebar({ user, team }: SidebarProps) {
             </Link>
 
             {isAdmin && (
-              <Link
-                href="/admin"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[12px] font-bold transition-all relative group ${
-                  pathname.startsWith('/admin') 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {pathname.startsWith('/admin') && (
-                  <motion.div
-                    layoutId="active-pill"
-                    className="absolute inset-0 bg-primary/10 border border-primary/20 rounded-xl -z-10"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
-                <UserCheck className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-                  pathname.startsWith('/admin') ? 'text-primary' : 'text-muted-foreground'
-                }`} />
-                {!collapsed && <span className="truncate">Painel Admin</span>}
-              </Link>
+              <>
+                <Link
+                  href="/admin"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[12px] font-bold transition-all relative group ${
+                    pathname === '/admin' 
+                      ? 'text-primary' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {pathname === '/admin' && (
+                    <motion.div
+                      layoutId="active-pill"
+                      className="absolute inset-0 bg-primary/10 border border-primary/20 rounded-xl -z-10"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <UserCheck className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                    pathname === '/admin' ? 'text-primary' : 'text-muted-foreground'
+                  }`} />
+                  {!collapsed && <span className="truncate">Painel Admin</span>}
+                </Link>
+
+                <Link
+                  href="/admin/cargos"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[12px] font-bold transition-all relative group ${
+                    pathname === '/admin/cargos' 
+                      ? 'text-primary' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {pathname === '/admin/cargos' && (
+                    <motion.div
+                      layoutId="active-pill"
+                      className="absolute inset-0 bg-primary/10 border border-primary/20 rounded-xl -z-10"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <Shield className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                    pathname === '/admin/cargos' ? 'text-primary' : 'text-muted-foreground'
+                  }`} />
+                  {!collapsed && <span className="truncate">Cargos & Permissões</span>}
+                </Link>
+              </>
             )}
           </div>
         </div>

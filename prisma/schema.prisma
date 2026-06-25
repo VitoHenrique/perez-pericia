@@ -49,6 +49,8 @@ model Usuario {
   email        String        @unique
   senha_hash   String
   role         Role          @default(perito)
+  cargoId      String?
+  cargo        Cargo?        @relation(fields: [cargoId], references: [id])
   foto_url     String?
   data_criacao DateTime      @default(now())
   processos    Processo[]
@@ -117,5 +119,36 @@ model ActivityLog {
   @@index([entityType])
   @@index([timestamp])
 }
+
+model Cargo {
+  id          String           @id @default(cuid())
+  nome        String           @unique // Nome do cargo (ex: "Administrador", "Perito", "Assistente")
+  descricao   String?          // Descrição do cargo
+  usuarios    Usuario[]        // Relacionamento com usuários que possuem este cargo
+  permissoes  CargoPermissao[] // Permissões associadas a este cargo
+
+  @@map("cargos")
+}
+
+model Permissao {
+  id          String           @id @default(cuid())
+  nome        String           @unique // Nome da permissão (ex: "processos.view")
+  descricao   String?          // Descrição da permissão
+  cargos      CargoPermissao[] // Cargos que possuem esta permissão
+
+  @@map("permissoes")
+}
+
+model CargoPermissao {
+  id           String    @id @default(cuid())
+  cargoId      String
+  permissaoId  String
+  cargo        Cargo     @relation(fields: [cargoId], references: [id], onDelete: Cascade)
+  permissao    Permissao @relation(fields: [permissaoId], references: [id], onDelete: Cascade)
+
+  @@unique([cargoId, permissaoId])
+  @@map("cargo_permissoes")
+}
+
 
 

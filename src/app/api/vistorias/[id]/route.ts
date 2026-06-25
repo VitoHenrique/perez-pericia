@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, hasPermission } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 
 export async function DELETE(
@@ -11,6 +11,10 @@ export async function DELETE(
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    if (!hasPermission(user, ['vistorias.delete'])) {
+      return NextResponse.json({ error: 'Acesso negado: sem permissão para excluir vistorias' }, { status: 403 });
     }
 
     const { id } = await params;

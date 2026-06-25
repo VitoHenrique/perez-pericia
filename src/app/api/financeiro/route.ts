@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, hasPermission } from '@/lib/auth';
 
 export async function GET() {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    if (!hasPermission(user, ['honorarios.view'])) {
+      return NextResponse.json({ error: 'Acesso negado: sem permissão para visualizar financeiro' }, { status: 403 });
     }
 
     const whereClause: any = {};

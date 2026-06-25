@@ -49,6 +49,22 @@ export async function getCurrentUser() {
         nome: true,
         email: true,
         role: true,
+        cargoId: true,
+        cargo: {
+          select: {
+            id: true,
+            nome: true,
+            permissoes: {
+              select: {
+                permissao: {
+                  select: {
+                    nome: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         foto_url: true,
         data_criacao: true,
       },
@@ -59,3 +75,49 @@ export async function getCurrentUser() {
     return null;
   }
 }
+
+export function hasPermission(user: any, requiredPermissions: string[]): boolean {
+  if (!user) return false;
+  
+  // Administrador has bypass (always has all permissions)
+  if (user.role === 'admin' || user.cargo?.nome === 'Administrador') {
+    return true;
+  }
+
+  if (!user.cargo || !user.cargo.permissoes) return false;
+  
+  const userPermissions = user.cargo.permissoes.map(
+    (cp: any) => cp.permissao.nome
+  );
+  
+  return requiredPermissions.every(perm => userPermissions.includes(perm));
+}
+
+export async function getUserWithPermissions(userId: string) {
+  return prisma.usuario.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      nome: true,
+      email: true,
+      role: true,
+      cargoId: true,
+      cargo: {
+        select: {
+          id: true,
+          nome: true,
+          permissoes: {
+            select: {
+              permissao: {
+                select: {
+                  nome: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+

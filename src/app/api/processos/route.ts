@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, hasPermission } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 
 export async function GET(request: Request) {
@@ -8,6 +8,10 @@ export async function GET(request: Request) {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    if (!hasPermission(user, ['processos.view'])) {
+      return NextResponse.json({ error: 'Acesso negado: sem permissão para visualizar processos' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -64,6 +68,10 @@ export async function POST(request: Request) {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    if (!hasPermission(user, ['processos.create'])) {
+      return NextResponse.json({ error: 'Acesso negado: sem permissão para cadastrar processos' }, { status: 403 });
     }
 
     const body = await request.json();

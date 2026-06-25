@@ -22,6 +22,11 @@ interface UserItem {
   nome: string;
   email: string;
   role: string;
+  cargoId?: string | null;
+  cargo?: {
+    id: string;
+    nome: string;
+  } | null;
   data_criacao: string;
   _count: {
     processos: number;
@@ -30,6 +35,7 @@ interface UserItem {
 
 export default function AdminPage() {
   const [users, setUsers] = useState<UserItem[]>([]);
+  const [cargos, setCargos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -42,6 +48,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchAdminData();
+    fetchCargosData();
     // Retrieve current user info to set self id
     fetch('/api/auth/me')
       .then(res => res.json())
@@ -52,6 +59,18 @@ export default function AdminPage() {
       })
       .catch(console.error);
   }, []);
+
+  const fetchCargosData = async () => {
+    try {
+      const res = await fetch('/api/admin/roles');
+      if (res.ok) {
+        const data = await res.json();
+        setCargos(data.roles || []);
+      }
+    } catch (err) {
+      console.error('Erro ao carregar cargos:', err);
+    }
+  };
 
   const fetchAdminData = async () => {
     setLoading(true);
@@ -74,18 +93,18 @@ export default function AdminPage() {
 
   const { showAlert, showConfirm } = useModal();
 
-  const handleUpdateRole = async (userId: string, newRole: string) => {
+  const handleUpdateCargo = async (userId: string, cargoId: string) => {
     setRoleUpdateLoading(true);
     setUpdatingUserId(userId);
     try {
       const res = await fetch(`/api/admin/usuarios/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: newRole }),
+        body: JSON.stringify({ cargoId }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erro ao atualizar perfil.');
+      if (!res.ok) throw new Error(data.error || 'Erro ao atualizar cargo do usuário.');
 
       fetchAdminData();
     } catch (err: any) {
@@ -204,9 +223,18 @@ export default function AdminPage() {
 
       {/* User Management List */}
       <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
-        <div className="border-b border-border pb-4">
-          <h3 className="font-outfit text-sm font-bold text-foreground">Gestão Integrada de Usuários</h3>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Defina cargos e gerencie privilégios dos membros cadastrados</p>
+        <div className="border-b border-border pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h3 className="font-outfit text-sm font-bold text-foreground">Gestão Integrada de Usuários</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Defina cargos e gerencie privilégios dos membros cadastrados</p>
+          </div>
+          <Link 
+            href="/admin/cargos" 
+            className="bg-secondary/10 hover:bg-secondary/15 text-secondary border border-secondary/20 hover:border-secondary/30 text-[10px] font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 self-start sm:self-center cursor-pointer"
+          >
+            <Layers className="w-3.5 h-3.5" />
+            Configurar Cargos
+          </Link>
         </div>
 
         <div className="space-y-4">
@@ -221,7 +249,7 @@ export default function AdminPage() {
               >
                 {/* Details */}
                 <div className="space-y-1.5 max-w-sm">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-outfit font-extrabold text-foreground text-sm">
                       {u.nome} {isSelf && '(Você)'}
                     </span>
@@ -229,7 +257,7 @@ export default function AdminPage() {
                       u.role === 'admin' ? 'bg-secondary/15 text-secondary border-secondary/20' : 
                       u.role === 'perito' ? 'bg-primary/15 text-primary border-primary/20' : 'bg-slate-500/15 text-slate-400 border-slate-500/20'
                     }`}>
-                      {u.role}
+                      {u.cargo?.nome || u.role}
                     </span>
                   </div>
                   <span className="text-[10px] text-muted-foreground block">
@@ -246,14 +274,17 @@ export default function AdminPage() {
 
                   <div className="flex items-center gap-3">
                     <select
-                      value={u.role}
+                      value={u.cargoId || ''}
                       disabled={isSelf || isUpdating}
-                      onChange={(e) => handleUpdateRole(u.id, e.target.value)}
+                      onChange={(e) => handleUpdateCargo(u.id, e.target.value)}
                       className="bg-card border border-border text-[10px] font-bold px-2.5 py-1.5 rounded-xl focus:outline-none disabled:opacity-50"
                     >
-                      <option value="admin">Administrador</option>
-                      <option value="perito">Perito</option>
-                      <option value="assistente">Assistente</option>
+                      <option value="" disabled>Selecionar cargo...</option>
+                      {cargos.map((cargo) => (
+                        <option key={cargo.id} value={cargo.id}>
+                          {cargo.nome}
+                        </option>
+                      ))}
                     </select>
 
                     <button
