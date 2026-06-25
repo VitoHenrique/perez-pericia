@@ -51,6 +51,9 @@ interface Processo {
   descricao: string | null;
   documentos: Documento[];
   honorarios: Honorario[];
+  origem: string;
+  subtipo_pericia: string;
+  relatorio_pesquisa: string | null;
 }
 
 export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: string }> }) {
@@ -72,6 +75,9 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
   const [dataNomeacao, setDataNomeacao] = useState('');
   const [prazoEntrega, setPrazoEntrega] = useState('');
   const [descricao, setDescricao] = useState('');
+  const [origem, setOrigem] = useState('');
+  const [subtipoPericia, setSubtipoPericia] = useState('');
+  const [relatorioPesquisa, setRelatorioPesquisa] = useState('');
 
   // Upload state
   const [uploading, setUploading] = useState(false);
@@ -113,6 +119,9 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
         setDataNomeacao(data.processo.data_nomeacao.substring(0, 10));
         setPrazoEntrega(data.processo.prazo_entrega.substring(0, 10));
         setDescricao(data.processo.descricao || '');
+        setOrigem(data.processo.origem || 'nomeacao_judicial');
+        setSubtipoPericia(data.processo.subtipo_pericia || 'grafo');
+        setRelatorioPesquisa(data.processo.relatorio_pesquisa || '');
       }
     } catch (err: any) {
       console.error(err);
@@ -139,6 +148,9 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
           data_nomeacao: dataNomeacao,
           prazo_entrega: prazoEntrega,
           descricao,
+          origem,
+          subtipo_pericia: subtipoPericia,
+          relatorio_pesquisa: origem === 'pesquisa_dje' ? relatorioPesquisa : null,
         }),
       });
 
@@ -274,9 +286,12 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
 
   const getStatusColor = (status: string) => {
     const colors: { [key: string]: string } = {
-      backlog: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+      nomeacao_judicial: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+      pesquisa_dje: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
       aguardando_doc: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
       diligencia: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+      confeccao_envelope: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+      estimativa_honorarios: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
       elaboracao: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
       revisao: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
       concluido: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -286,9 +301,12 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
 
   const getStatusLabel = (status: string) => {
     const labels: { [key: string]: string } = {
-      backlog: 'Entrada (Backlog)',
+      nomeacao_judicial: 'Nomeação Judicial',
+      pesquisa_dje: 'Pesquisa DJE',
       aguardando_doc: 'Aguardando Doc.',
       diligencia: 'Diligência / Vistoria',
+      confeccao_envelope: 'Confecção de Envelope',
+      estimativa_honorarios: 'Estimativa de Honorários',
       elaboracao: 'Elaboração de Laudo',
       revisao: 'Revisão do Laudo',
       concluido: 'Concluído (Entregue)',
@@ -385,14 +403,44 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
               </div>
 
               <div>
+                <label className="block mb-1.5 text-foreground">Origem do Processo</label>
+                <select
+                  value={origem}
+                  onChange={(e) => {
+                    setOrigem(e.target.value);
+                    if (e.target.value === 'pesquisa_dje' && status === 'nomeacao_judicial') {
+                      setStatus('pesquisa_dje');
+                    } else if (e.target.value === 'nomeacao_judicial' && status === 'pesquisa_dje') {
+                      setStatus('nomeacao_judicial');
+                    }
+                  }}
+                  className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-bold"
+                >
+                  <option value="nomeacao_judicial">Nomeação Judicial</option>
+                  <option value="pesquisa_dje">Pesquisa DJE</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="block mb-1.5 text-foreground">Tipo de Perícia</label>
                 <input
                   type="text"
-                  required
-                  value={tipoPericia}
-                  onChange={(e) => setTipoPericia(e.target.value)}
-                  className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-medium"
+                  disabled
+                  value="Grafotécnica"
+                  className="block w-full px-3.5 py-2 bg-muted/40 border border-border/85 rounded-lg text-muted-foreground font-medium select-none"
                 />
+              </div>
+
+              <div>
+                <label className="block mb-1.5 text-foreground">Detalhe da Perícia</label>
+                <select
+                  value={subtipoPericia}
+                  onChange={(e) => setSubtipoPericia(e.target.value)}
+                  className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-bold"
+                >
+                  <option value="grafo">Grafo (manuscrito)</option>
+                  <option value="assinatura_eletronica">Assinatura eletrônica</option>
+                </select>
               </div>
 
               <div>
@@ -402,9 +450,12 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
                   onChange={(e) => setStatus(e.target.value)}
                   className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-bold"
                 >
-                  <option value="backlog">Entrada (Backlog)</option>
+                  <option value="nomeacao_judicial">Nomeação Judicial</option>
+                  <option value="pesquisa_dje">Pesquisa DJE</option>
                   <option value="aguardando_doc">Aguardando Documentação</option>
                   <option value="diligencia">Diligência / Vistoria</option>
+                  <option value="confeccao_envelope">Confecção de Envelope</option>
+                  <option value="estimativa_honorarios">Estimativa de Honorários</option>
                   <option value="elaboracao">Elaboração de Laudo</option>
                   <option value="revisao">Revisão do Laudo</option>
                   <option value="concluido">Concluído (Entregue)</option>
@@ -412,7 +463,9 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
               </div>
 
               <div>
-                <label className="block mb-1.5 text-foreground">Data da Nomeação</label>
+                <label className="block mb-1.5 text-foreground">
+                  {origem === 'pesquisa_dje' ? 'Data da Pesquisa' : 'Data da Nomeação'}
+                </label>
                 <input
                   type="date"
                   required
@@ -434,7 +487,21 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
               </div>
             </div>
 
-            <div>
+            {origem === 'pesquisa_dje' && (
+              <div className="mt-4">
+                <label className="block mb-1.5 text-foreground">Relatório de Pesquisa *</label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Descreva o relatório de pesquisa DJE..."
+                  value={relatorioPesquisa}
+                  onChange={(e) => setRelatorioPesquisa(e.target.value)}
+                  className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-medium resize-none"
+                />
+              </div>
+            )}
+
+            <div className="mt-4">
               <label className="block mb-1.5 text-foreground">Resumo da Demanda / Partes</label>
               <textarea
                 rows={3}
@@ -475,21 +542,28 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
                   {getStatusLabel(processo.status)}
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-[11px] font-bold text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-y-1.5 gap-x-4 text-[11px] font-bold text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
                   {processo.vara_comarca}
                 </span>
                 <span className="flex items-center gap-1">
                   <Tag className="w-3.5 h-3.5 text-secondary shrink-0" />
-                  {processo.tipo_pericia}
+                  {processo.tipo_pericia} &bull; {processo.subtipo_pericia === 'assinatura_eletronica' ? 'Assinatura Eletrônica' : 'Grafo (Manuscrito)'}
+                </span>
+                <span className={`text-[9px] font-extrabold px-2 py-0.5 border rounded-md uppercase ${
+                  processo.origem === 'pesquisa_dje' ? 'bg-violet-500/10 text-violet-400 border-violet-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                }`}>
+                  {processo.origem === 'pesquisa_dje' ? 'Pesquisa DJE' : 'Nomeação Judicial'}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-4 text-xs">
               <div className="bg-background/50 border border-border/80 p-2.5 rounded-lg">
-                <span className="text-[9px] font-bold text-muted-foreground block uppercase tracking-wider">Nomeação</span>
+                <span className="text-[9px] font-bold text-muted-foreground block uppercase tracking-wider">
+                  {processo.origem === 'pesquisa_dje' ? 'Pesquisa' : 'Nomeação'}
+                </span>
                 <span className="font-bold text-foreground block mt-0.5">{formatDate(processo.data_nomeacao)}</span>
               </div>
               <div className="bg-background/50 border border-border/80 p-2.5 rounded-lg">
@@ -498,6 +572,15 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
               </div>
             </div>
           </div>
+
+          {processo.origem === 'pesquisa_dje' && (
+            <div>
+              <h3 className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest mb-1.5">Relatório de Pesquisa (DJE)</h3>
+              <p className="text-xs text-foreground leading-relaxed font-semibold bg-violet-500/5 border border-violet-500/20 p-4 rounded-lg whitespace-pre-wrap mb-4">
+                {processo.relatorio_pesquisa || 'Nenhum detalhe adicional informado.'}
+              </p>
+            </div>
+          )}
 
           <div>
             <h3 className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest mb-1.5">Resumo Técnico</h3>

@@ -75,9 +75,14 @@ export async function POST(request: Request) {
       descricao,
       valor_total,
       data_vencimento_honorario,
+      origem,
+      subtipo_pericia,
+      relatorio_pesquisa,
     } = body;
 
-    if (!numero_processo || !vara_comarca || !tipo_pericia || !data_nomeacao || !prazo_entrega) {
+    const resolvedTipoPericia = tipo_pericia || 'Grafotécnica';
+
+    if (!numero_processo || !vara_comarca || !resolvedTipoPericia || !data_nomeacao || !prazo_entrega) {
       return NextResponse.json(
         { error: 'Campos obrigatórios ausentes.' },
         { status: 400 }
@@ -89,11 +94,14 @@ export async function POST(request: Request) {
         usuario_id: user.id,
         numero_processo,
         vara_comarca,
-        tipo_pericia,
-        status: status || 'backlog',
+        tipo_pericia: resolvedTipoPericia,
+        subtipo_pericia: subtipo_pericia || 'grafo',
+        origem: origem || 'nomeacao_judicial',
+        status: status || 'nomeacao_judicial',
         data_nomeacao: new Date(data_nomeacao),
         prazo_entrega: new Date(prazo_entrega),
         descricao: descricao || '',
+        relatorio_pesquisa: relatorio_pesquisa || null,
       },
     });
 

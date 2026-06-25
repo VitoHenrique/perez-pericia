@@ -219,9 +219,12 @@ export default function DashboardPage() {
 
   const getProgressPercent = (status: string) => {
     const percentages: { [key: string]: number } = {
-      backlog: 15,
-      aguardando_doc: 35,
-      diligencia: 55,
+      nomeacao_judicial: 10,
+      pesquisa_dje: 20,
+      aguardando_doc: 30,
+      diligencia: 40,
+      confeccao_envelope: 50,
+      estimativa_honorarios: 60,
       elaboracao: 75,
       revisao: 90,
       concluido: 100,
@@ -231,9 +234,12 @@ export default function DashboardPage() {
 
   const getStatusBadgeClass = (status: string) => {
     const classes: { [key: string]: string } = {
-      backlog: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-400',
+      nomeacao_judicial: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-400',
+      pesquisa_dje: 'bg-violet-50 text-violet-600 dark:bg-violet-950/20 dark:text-violet-400',
       aguardando_doc: 'bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400',
       diligencia: 'bg-sky-50 text-sky-600 dark:bg-sky-950/20 dark:text-sky-400',
+      confeccao_envelope: 'bg-pink-50 text-pink-600 dark:bg-pink-950/20 dark:text-pink-400',
+      estimativa_honorarios: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-950/20 dark:text-yellow-400',
       elaboracao: 'bg-fuchsia-50 text-fuchsia-600 dark:bg-fuchsia-950/20 dark:text-fuchsia-400',
       revisao: 'bg-teal-50 text-teal-600 dark:bg-teal-950/20 dark:text-teal-400',
       concluido: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400',
@@ -243,9 +249,12 @@ export default function DashboardPage() {
 
   const getStatusLabel = (status: string) => {
     const labels: { [key: string]: string } = {
-      backlog: 'Entrada',
+      nomeacao_judicial: 'Nomeação Judicial',
+      pesquisa_dje: 'Pesquisa DJE',
       aguardando_doc: 'Aguardando Doc.',
       diligencia: 'Diligência',
+      confeccao_envelope: 'Confecção Envelope',
+      estimativa_honorarios: 'Estimativa Honorários',
       elaboracao: 'Elaboração',
       revisao: 'Revisão',
       concluido: 'Concluído',

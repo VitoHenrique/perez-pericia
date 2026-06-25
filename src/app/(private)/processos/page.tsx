@@ -35,6 +35,8 @@ interface Processo {
   prazo_entrega: string;
   descricao: string | null;
   honorarios: Honorario[];
+  origem: string;
+  subtipo_pericia: string;
 }
 
 export default function ProcessosListPage() {
@@ -88,9 +90,12 @@ export default function ProcessosListPage() {
 
   const getStatusLabel = (status: string) => {
     const labels: { [key: string]: string } = {
-      backlog: 'Entrada',
+      nomeacao_judicial: 'Nomeação Judicial',
+      pesquisa_dje: 'Pesquisa DJE',
       aguardando_doc: 'Aguardando Doc.',
       diligencia: 'Diligência',
+      confeccao_envelope: 'Confecção Envelope',
+      estimativa_honorarios: 'Estimativa Honorários',
       elaboracao: 'Elaboração',
       revisao: 'Revisão',
       concluido: 'Concluído',
@@ -100,9 +105,12 @@ export default function ProcessosListPage() {
 
   const getStatusColor = (status: string) => {
     const colors: { [key: string]: string } = {
-      backlog: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+      nomeacao_judicial: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+      pesquisa_dje: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
       aguardando_doc: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
       diligencia: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+      confeccao_envelope: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+      estimativa_honorarios: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
       elaboracao: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
       revisao: 'bg-teal-500/10 text-teal-400 border-teal-500/20',
       concluido: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -188,9 +196,12 @@ export default function ProcessosListPage() {
             className="block w-full pl-9 pr-4 py-2.5 bg-card border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent text-xs font-semibold transition-all appearance-none cursor-pointer"
           >
             <option value="all">Todos os Status</option>
-            <option value="backlog">Entrada (Backlog)</option>
+            <option value="nomeacao_judicial">Nomeação Judicial</option>
+            <option value="pesquisa_dje">Pesquisa DJE</option>
             <option value="aguardando_doc">Aguardando Doc.</option>
             <option value="diligencia">Diligência / Vistoria</option>
+            <option value="confeccao_envelope">Confecção de Envelope</option>
+            <option value="estimativa_honorarios">Estimativa de Honorários</option>
             <option value="elaboracao">Elaboração de Laudo</option>
             <option value="revisao">Revisão do Laudo</option>
             <option value="concluido">Concluído (Entregue)</option>
@@ -246,8 +257,18 @@ export default function ProcessosListPage() {
 
                   return (
                     <tr key={p.id} className="group">
-                      <td className="font-outfit font-bold text-foreground tracking-tight text-[13px] whitespace-nowrap">
-                        {p.numero_processo}
+                      <td className="font-outfit text-foreground tracking-tight text-[13px] whitespace-nowrap">
+                        <div className="font-bold">{p.numero_processo}</div>
+                        <div className="flex gap-1.5 mt-1">
+                          <span className={`text-[8px] font-extrabold px-1.5 py-0.2 border rounded uppercase ${
+                            p.origem === 'pesquisa_dje' ? 'bg-violet-500/10 text-violet-400 border-violet-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                          }`}>
+                            {p.origem === 'pesquisa_dje' ? 'DJE' : 'Nomeação'}
+                          </span>
+                          <span className="text-[8px] font-extrabold px-1.5 py-0.2 bg-zinc-500/10 text-muted-foreground border border-border rounded uppercase">
+                            {p.subtipo_pericia === 'assinatura_eletronica' ? 'Eletrônica' : 'Grafo'}
+                          </span>
+                        </div>
                       </td>
                       <td className="text-muted-foreground text-[12px] truncate max-w-[200px]" title={p.vara_comarca}>
                         {p.vara_comarca}

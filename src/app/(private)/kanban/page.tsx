@@ -40,9 +40,12 @@ export default function KanbanPage() {
   const [draggedOverCol, setDraggedOverCol] = useState<string | null>(null);
 
   const columns: Column[] = [
-    { id: 'backlog', title: 'Entrada', color: 'border-t-indigo-500 bg-indigo-500/5', glowColor: 'rgba(99, 102, 241, 0.1)' },
+    { id: 'nomeacao_judicial', title: 'Nomeação Judicial', color: 'border-t-indigo-500 bg-indigo-500/5', glowColor: 'rgba(99, 102, 241, 0.1)' },
+    { id: 'pesquisa_dje', title: 'Pesquisa DJE', color: 'border-t-violet-500 bg-violet-500/5', glowColor: 'rgba(139, 92, 246, 0.1)' },
     { id: 'aguardando_doc', title: 'Aguardando Doc.', color: 'border-t-amber-500 bg-amber-500/5', glowColor: 'rgba(245, 158, 11, 0.1)' },
     { id: 'diligencia', title: 'Diligência', color: 'border-t-sky-500 bg-sky-500/5', glowColor: 'rgba(14, 165, 233, 0.1)' },
+    { id: 'confeccao_envelope', title: 'Confecção Envelope', color: 'border-t-pink-500 bg-pink-500/5', glowColor: 'rgba(236, 72, 153, 0.1)' },
+    { id: 'estimativa_honorarios', title: 'Estimativa Honorários', color: 'border-t-yellow-500 bg-yellow-500/5', glowColor: 'rgba(234, 179, 8, 0.1)' },
     { id: 'elaboracao', title: 'Elaboração', color: 'border-t-fuchsia-500 bg-fuchsia-500/5', glowColor: 'rgba(217, 70, 239, 0.1)' },
     { id: 'revisao', title: 'Revisão', color: 'border-t-teal-500 bg-teal-500/5', glowColor: 'rgba(20, 184, 166, 0.1)' },
     { id: 'concluido', title: 'Concluído', color: 'border-t-emerald-500 bg-emerald-500/5', glowColor: 'rgba(16, 185, 129, 0.1)' },

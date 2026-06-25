@@ -10,12 +10,25 @@ export default function NovoProcessoPage() {
   const router = useRouter();
   const [numeroProcesso, setNumeroProcesso] = useState('');
   const [varaComarca, setVaraComarca] = useState('');
-  const [tipoPericia, setTipoPericia] = useState('');
-  const [status, setStatus] = useState('backlog');
+  const [status, setStatus] = useState('nomeacao_judicial');
   const [dataNomeacao, setDataNomeacao] = useState('');
   const [prazoEntrega, setPrazoEntrega] = useState('');
   const [descricao, setDescricao] = useState('');
   
+  // Novos campos
+  const [origem, setOrigem] = useState('nomeacao_judicial');
+  const [subtipoPericia, setSubtipoPericia] = useState('grafo');
+  const [relatorioPesquisa, setRelatorioPesquisa] = useState('');
+
+  const handleOrigemChange = (val: string) => {
+    setOrigem(val);
+    if (val === 'pesquisa_dje') {
+      setStatus('pesquisa_dje');
+    } else {
+      setStatus('nomeacao_judicial');
+    }
+  };
+
   // Honorario inicial (opcional)
   const [valorTotal, setValorTotal] = useState('');
   const [dataVencimentoHonorario, setDataVencimentoHonorario] = useState('');
@@ -35,11 +48,14 @@ export default function NovoProcessoPage() {
         body: JSON.stringify({
           numero_processo: numeroProcesso,
           vara_comarca: varaComarca,
-          tipo_pericia: tipoPericia,
+          tipo_pericia: 'Grafotécnica',
           status,
           data_nomeacao: dataNomeacao,
           prazo_entrega: prazoEntrega,
           descricao,
+          origem,
+          subtipo_pericia: subtipoPericia,
+          relatorio_pesquisa: origem === 'pesquisa_dje' ? relatorioPesquisa : null,
           valor_total: valorTotal ? parseFloat(valorTotal) : null,
           data_vencimento_honorario: dataVencimentoHonorario || null,
         }),
@@ -125,15 +141,37 @@ export default function NovoProcessoPage() {
               </div>
 
               <div>
+                <label className="block mb-1.5 text-foreground">Origem do Processo *</label>
+                <select
+                  value={origem}
+                  onChange={(e) => handleOrigemChange(e.target.value)}
+                  className="block w-full px-3.5 py-2.5 bg-background/50 border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent text-xs text-foreground font-bold cursor-pointer"
+                >
+                  <option value="nomeacao_judicial">Nomeação Judicial</option>
+                  <option value="pesquisa_dje">Pesquisa DJE</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="block mb-1.5 text-foreground">Tipo de Perícia *</label>
                 <input
                   type="text"
-                  required
-                  placeholder="Ex: Perícia Grafotécnica / Contábil"
-                  value={tipoPericia}
-                  onChange={(e) => setTipoPericia(e.target.value)}
-                  className="block w-full px-3.5 py-2.5 bg-background/50 border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent text-xs text-foreground font-medium"
+                  disabled
+                  value="Grafotécnica"
+                  className="block w-full px-3.5 py-2.5 bg-muted/40 border border-border/85 rounded-lg text-xs text-muted-foreground font-medium select-none"
                 />
+              </div>
+
+              <div>
+                <label className="block mb-1.5 text-foreground">Detalhe da Perícia *</label>
+                <select
+                  value={subtipoPericia}
+                  onChange={(e) => setSubtipoPericia(e.target.value)}
+                  className="block w-full px-3.5 py-2.5 bg-background/50 border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent text-xs text-foreground font-bold cursor-pointer"
+                >
+                  <option value="grafo">Grafo (manuscrito)</option>
+                  <option value="assinatura_eletronica">Assinatura eletrônica</option>
+                </select>
               </div>
 
               <div>
@@ -143,9 +181,12 @@ export default function NovoProcessoPage() {
                   onChange={(e) => setStatus(e.target.value)}
                   className="block w-full px-3.5 py-2.5 bg-background/50 border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent text-xs text-foreground font-bold cursor-pointer"
                 >
-                  <option value="backlog">Entrada (Backlog)</option>
+                  <option value="nomeacao_judicial">Nomeação Judicial</option>
+                  <option value="pesquisa_dje">Pesquisa DJE</option>
                   <option value="aguardando_doc">Aguardando Documentação</option>
                   <option value="diligencia">Diligência / Vistoria</option>
+                  <option value="confeccao_envelope">Confecção de Envelope</option>
+                  <option value="estimativa_honorarios">Estimativa de Honorários</option>
                   <option value="elaboracao">Elaboração de Laudo</option>
                   <option value="revisao">Revisão do Laudo</option>
                   <option value="concluido">Concluído (Entregue)</option>
@@ -153,7 +194,9 @@ export default function NovoProcessoPage() {
               </div>
 
               <div>
-                <label className="block mb-1.5 text-foreground">Data da Nomeação *</label>
+                <label className="block mb-1.5 text-foreground">
+                  {origem === 'pesquisa_dje' ? 'Data da Pesquisa *' : 'Data da Nomeação *'}
+                </label>
                 <input
                   type="date"
                   required
@@ -218,6 +261,20 @@ export default function NovoProcessoPage() {
               3. Resumo da Demanda / Anotações
             </h3>
             
+            {origem === 'pesquisa_dje' && (
+              <div className="animate-fade-in">
+                <label className="block mb-1.5 text-foreground">Relatório de Pesquisa *</label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Descreva o relatório de pesquisa DJE (partes encontradas, telefones, histórico de tentativas de contato)..."
+                  value={relatorioPesquisa}
+                  onChange={(e) => setRelatorioPesquisa(e.target.value)}
+                  className="block w-full px-3.5 py-2.5 bg-background/50 border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent text-xs text-foreground font-medium resize-none mb-2"
+                />
+              </div>
+            )}
+
             <div>
               <label className="block mb-1.5 text-foreground">Detalhes das Partes / Assistentes</label>
               <textarea

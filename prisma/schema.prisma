@@ -16,12 +16,25 @@ enum Role {
 }
 
 enum Status {
-  backlog
+  nomeacao_judicial
+  pesquisa_dje
   aguardando_doc
   diligencia
+  confeccao_envelope
+  estimativa_honorarios
   elaboracao
   revisao
   concluido
+}
+
+enum Origem {
+  nomeacao_judicial
+  pesquisa_dje
+}
+
+enum SubtipoPericia {
+  grafo
+  assinatura_eletronica
 }
 
 enum StatusPagamento {
@@ -41,19 +54,22 @@ model Usuario {
 }
 
 model Processo {
-  id              String      @id @default(uuid())
-  usuario_id      String
-  usuario         Usuario     @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
-  numero_processo String
-  vara_comarca    String
-  tipo_pericia    String
-  status          Status      @default(backlog)
-  data_nomeacao   DateTime
-  prazo_entrega   DateTime
-  descricao       String?
-  honorarios      Honorario[]
-  documentos      Documento[]
-  vistorias       Vistoria[]
+  id                 String          @id @default(uuid())
+  usuario_id         String
+  usuario            Usuario         @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  numero_processo    String
+  vara_comarca       String
+  tipo_pericia       String          @default("Grafotécnica")
+  subtipo_pericia    SubtipoPericia  @default(grafo)
+  origem             Origem          @default(nomeacao_judicial)
+  status             Status          @default(nomeacao_judicial)
+  data_nomeacao      DateTime
+  prazo_entrega      DateTime
+  descricao          String?
+  relatorio_pesquisa String?
+  honorarios         Honorario[]
+  documentos         Documento[]
+  vistorias          Vistoria[]
 }
 
 model Honorario {

@@ -38,9 +38,12 @@ export async function GET() {
     let prazos15dias = 0;
 
     const statusCounts: { [key: string]: number } = {
-      backlog: 0,
+      nomeacao_judicial: 0,
+      pesquisa_dje: 0,
       aguardando_doc: 0,
       diligencia: 0,
+      confeccao_envelope: 0,
+      estimativa_honorarios: 0,
       elaboracao: 0,
       revisao: 0,
       concluido: 0,
@@ -66,7 +69,7 @@ export async function GET() {
         concluidos++;
       } else {
         ativos++;
-        if (p.status === 'backlog' || p.status === 'aguardando_doc') {
+        if (p.status === 'nomeacao_judicial' || p.status === 'pesquisa_dje' || p.status === 'aguardando_doc') {
           suspensos++;
         }
 
@@ -112,11 +115,14 @@ export async function GET() {
     }
 
     const processosPorStatus = Object.keys(statusCounts).map((k) => ({
-      name: k === 'backlog' ? 'Entrada' : 
+      name: k === 'nomeacao_judicial' ? 'Nomeação Judicial' : 
+            k === 'pesquisa_dje' ? 'Pesquisa DJE' :
             k === 'aguardando_doc' ? 'Aguardando Doc.' :
             k === 'diligencia' ? 'Diligência' :
-            k === 'elaboracao' ? 'Elaboração' :
-            k === 'revisao' ? 'Revisão' : 'Concluído',
+            k === 'confeccao_envelope' ? 'Confecção Envelope' :
+            k === 'estimativa_honorarios' ? 'Estimativa Honorários' :
+            k === 'elaboracao' ? 'Elaboração Laudo' :
+            k === 'revisao' ? 'Revisão Laudo' : 'Concluído',
       value: statusCounts[k],
       key: k,
     }));

@@ -77,6 +77,9 @@ export async function PUT(
       data_nomeacao,
       prazo_entrega,
       descricao,
+      origem,
+      subtipo_pericia,
+      relatorio_pesquisa,
     } = body;
 
     const updatedData: any = {};
@@ -87,6 +90,9 @@ export async function PUT(
     if (data_nomeacao !== undefined) updatedData.data_nomeacao = new Date(data_nomeacao);
     if (prazo_entrega !== undefined) updatedData.prazo_entrega = new Date(prazo_entrega);
     if (descricao !== undefined) updatedData.descricao = descricao;
+    if (origem !== undefined) updatedData.origem = origem;
+    if (subtipo_pericia !== undefined) updatedData.subtipo_pericia = subtipo_pericia;
+    if (relatorio_pesquisa !== undefined) updatedData.relatorio_pesquisa = relatorio_pesquisa;
 
     const updatedProcesso = await prisma.processo.update({
       where: { id },
