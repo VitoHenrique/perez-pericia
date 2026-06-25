@@ -99,172 +99,170 @@ export default function Sidebar({ user, team }: SidebarProps) {
 
   return (
     <aside 
-      className={`bg-card border-r border-border h-screen flex flex-col justify-between transition-all duration-300 ease-in-out sticky top-0 z-30 shrink-0 ${
+      className={`bg-card border-r border-border h-screen flex flex-col transition-all duration-300 ease-in-out sticky top-0 z-30 shrink-0 ${
         collapsed ? 'w-[72px]' : 'w-60'
       }`}
     >
-      <div>
-        {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-border">
-          <Link href="/dashboard" className="flex items-center gap-2.5 overflow-hidden pl-1.5">
-            {/* Logo: Circular badge with a white sparkle star inside */}
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
-              <Sparkles className="w-4 h-4 fill-white text-white" />
-            </div>
-            {!collapsed && (
-              <span className="font-outfit text-sm font-extrabold tracking-tight text-foreground uppercase tracking-wide truncate">
-                Perez Perícia
-              </span>
-            )}
-          </Link>
-          <button 
-            onClick={() => setCollapsed(!collapsed)}
-            className="w-7 h-7 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer"
-          >
-            {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
-          </button>
-        </div>
-
-        {/* Navigation Items */}
-        <nav className="p-3 space-y-5">
-          {/* OVERVIEW SECTION */}
-          <div>
-            {!collapsed && (
-              <span className="px-3 text-[9px] uppercase font-extrabold text-muted-foreground/60 tracking-widest block mb-2">
-                Visão Geral
-              </span>
-            )}
-            <div className="space-y-1">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.path || pathname.startsWith(`${item.path}/`);
-                return (
-                  <Link
-                    key={item.path}
-                    href={item.path}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[12px] font-bold transition-all relative group ${
-                      isActive 
-                        ? 'text-primary' 
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {/* Background Pill Animation */}
-                    {isActive && (
-                      <motion.div
-                        layoutId="active-pill"
-                        className="absolute inset-0 bg-primary/10 border border-primary/20 rounded-xl -z-10"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                    
-                    <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-                      isActive ? 'text-primary' : 'text-muted-foreground'
-                    }`} />
-                    
-                    {!collapsed && (
-                      <span className="truncate">{item.name}</span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
+      {/* Brand Header */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-border shrink-0">
+        <Link href="/dashboard" className="flex items-center gap-2.5 overflow-hidden pl-1.5">
+          {/* Logo: Circular badge with a white sparkle star inside */}
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
+            <Sparkles className="w-4 h-4 fill-white text-white" />
           </div>
+          {!collapsed && (
+            <span className="font-outfit text-sm font-extrabold tracking-tight text-foreground uppercase tracking-wide truncate">
+              Perez Perícia
+            </span>
+          )}
+        </Link>
+        <button 
+          onClick={() => setCollapsed(!collapsed)}
+          className="w-7 h-7 rounded-lg hover:bg-muted/50 border border-transparent hover:border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer"
+        >
+          {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+        </button>
+      </div>
 
-          {/* EQUIPE (FRIENDS) SECTION */}
-          <div>
-            {!collapsed && (
-              <div className="flex items-center justify-between px-3 mb-2">
-                <span className="text-[9px] uppercase font-extrabold text-muted-foreground/60 tracking-widest block">
-                  Equipe
-                </span>
-                <Link href="/equipe" className="text-[8px] font-bold text-primary hover:underline uppercase tracking-wide">
-                  Ver Tudo
-                </Link>
-              </div>
-            )}
-            <div className="space-y-2.5 px-3">
-              {(team || []).map((member) => (
-                <div key={member.id} className="flex items-center gap-2.5 overflow-hidden">
-                  {member.foto_url ? (
-                    <img
-                      src={member.foto_url}
-                      alt={member.nome}
-                      className="w-7 h-7 rounded-full object-cover shrink-0 shadow-sm"
-                    />
-                  ) : (
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm ${getColorClass(member.nome)}`}>
-                      {getInitials(member.nome)}
-                    </div>
-                  )}
-                  {!collapsed && (
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[11px] font-bold text-foreground truncate leading-tight">{member.nome}</span>
-                      <span className="text-[8px] font-bold text-muted-foreground/75 truncate mt-0.5">{getRoleLabel(member.role)}</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* SETTINGS / ADMIN SECTION */}
-          <div>
-            {!collapsed && (
-              <span className="px-3 text-[9px] uppercase font-extrabold text-muted-foreground/60 tracking-widest block mb-2">
-                Ajustes
-              </span>
-            )}
-            <div className="space-y-1">
-              <Link
-                href="/configuracoes"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[12px] font-bold transition-all relative group ${
-                  pathname === '/configuracoes' 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {pathname === '/configuracoes' && (
-                  <motion.div
-                    layoutId="active-pill"
-                    className="absolute inset-0 bg-primary/10 border border-primary/20 rounded-xl -z-10"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
-                <Settings className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-                  pathname === '/configuracoes' ? 'text-primary' : 'text-muted-foreground'
-                }`} />
-                {!collapsed && <span className="truncate">Configurações</span>}
-              </Link>
-
-              {isAdmin && (
+      {/* Navigation Items */}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-5">
+        {/* OVERVIEW SECTION */}
+        <div>
+          {!collapsed && (
+            <span className="px-3 text-[9px] uppercase font-extrabold text-muted-foreground/60 tracking-widest block mb-2">
+              Visão Geral
+            </span>
+          )}
+          <div className="space-y-1">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.path || pathname.startsWith(`${item.path}/`);
+              return (
                 <Link
-                  href="/admin"
+                  key={item.path}
+                  href={item.path}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[12px] font-bold transition-all relative group ${
-                    pathname.startsWith('/admin') 
+                    isActive 
                       ? 'text-primary' 
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  {pathname.startsWith('/admin') && (
+                  {/* Background Pill Animation */}
+                  {isActive && (
                     <motion.div
                       layoutId="active-pill"
                       className="absolute inset-0 bg-primary/10 border border-primary/20 rounded-xl -z-10"
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
-                  <UserCheck className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
-                    pathname.startsWith('/admin') ? 'text-primary' : 'text-muted-foreground'
+                  
+                  <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                    isActive ? 'text-primary' : 'text-muted-foreground'
                   }`} />
-                  {!collapsed && <span className="truncate">Painel Admin</span>}
+                  
+                  {!collapsed && (
+                    <span className="truncate">{item.name}</span>
+                  )}
                 </Link>
-              )}
-            </div>
+              );
+            })}
           </div>
-        </nav>
-      </div>
+        </div>
+
+        {/* EQUIPE (FRIENDS) SECTION */}
+        <div>
+          {!collapsed && (
+            <div className="flex items-center justify-between px-3 mb-2">
+              <span className="text-[9px] uppercase font-extrabold text-muted-foreground/60 tracking-widest block">
+                Equipe
+              </span>
+              <Link href="/equipe" className="text-[8px] font-bold text-primary hover:underline uppercase tracking-wide">
+                Ver Tudo
+              </Link>
+            </div>
+          )}
+          <div className="space-y-2.5 px-3">
+            {(team || []).map((member) => (
+              <div key={member.id} className="flex items-center gap-2.5 overflow-hidden">
+                {member.foto_url ? (
+                  <img
+                    src={member.foto_url}
+                    alt={member.nome}
+                    className="w-7 h-7 rounded-full object-cover shrink-0 shadow-sm"
+                  />
+                ) : (
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm ${getColorClass(member.nome)}`}>
+                    {getInitials(member.nome)}
+                  </div>
+                )}
+                {!collapsed && (
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[11px] font-bold text-foreground truncate leading-tight">{member.nome}</span>
+                    <span className="text-[8px] font-bold text-muted-foreground/75 truncate mt-0.5">{getRoleLabel(member.role)}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* SETTINGS / ADMIN SECTION */}
+        <div>
+          {!collapsed && (
+            <span className="px-3 text-[9px] uppercase font-extrabold text-muted-foreground/60 tracking-widest block mb-2">
+              Ajustes
+            </span>
+          )}
+          <div className="space-y-1">
+            <Link
+              href="/configuracoes"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[12px] font-bold transition-all relative group ${
+                pathname === '/configuracoes' 
+                  ? 'text-primary' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {pathname === '/configuracoes' && (
+                <motion.div
+                  layoutId="active-pill"
+                  className="absolute inset-0 bg-primary/10 border border-primary/20 rounded-xl -z-10"
+                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                />
+              )}
+              <Settings className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                pathname === '/configuracoes' ? 'text-primary' : 'text-muted-foreground'
+              }`} />
+              {!collapsed && <span className="truncate">Configurações</span>}
+            </Link>
+
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[12px] font-bold transition-all relative group ${
+                  pathname.startsWith('/admin') 
+                    ? 'text-primary' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {pathname.startsWith('/admin') && (
+                  <motion.div
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-primary/10 border border-primary/20 rounded-xl -z-10"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <UserCheck className={`w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-105 ${
+                  pathname.startsWith('/admin') ? 'text-primary' : 'text-muted-foreground'
+                }`} />
+                {!collapsed && <span className="truncate">Painel Admin</span>}
+              </Link>
+            )}
+          </div>
+        </div>
+      </nav>
 
       {/* User Section / Bottom */}
-      <div className="p-3 border-t border-border bg-background/20 space-y-2">
+      <div className="p-3 border-t border-border bg-background/20 space-y-2 shrink-0">
         {!collapsed && user && (
           <div className="px-3 py-2 rounded-xl bg-primary/5 border border-primary/10">
             <h4 className="text-[11px] font-bold text-foreground truncate leading-tight">{user.nome}</h4>
