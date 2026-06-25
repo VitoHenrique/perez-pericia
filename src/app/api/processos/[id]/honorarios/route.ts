@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/activity';
 
 export async function POST(
   request: Request,
@@ -39,6 +40,17 @@ export async function POST(
         valor_recebido: valor_recebido ? parseFloat(valor_recebido) : 0,
         status_pagamento: status_pagamento || 'pendente',
         data_vencimento: new Date(data_vencimento),
+      },
+    });
+
+    await logActivity({
+      userId: user.id,
+      action: 'CREATED',
+      entityType: 'Honorario',
+      entityId: honorario.id,
+      details: {
+        valor_total: honorario.valor_total,
+        numero_processo: processo.numero_processo,
       },
     });
 

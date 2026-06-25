@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/activity';
 
 export async function GET(request: Request) {
   try {
@@ -105,14 +106,36 @@ export async function POST(request: Request) {
       },
     });
 
+    await logActivity({
+      userId: user.id,
+      action: 'CREATED',
+      entityType: 'Processo',
+      entityId: processo.id,
+      details: {
+        numero_processo: processo.numero_processo,
+        vara_comarca: processo.vara_comarca,
+      },
+    });
+
     if (valor_total !== undefined && valor_total !== null && !isNaN(parseFloat(valor_total))) {
-      await prisma.honorario.create({
+      const honorario = await prisma.honorario.create({
         data: {
           processo_id: processo.id,
           valor_total: parseFloat(valor_total),
           valor_recebido: 0,
           status_pagamento: 'pendente',
           data_vencimento: data_vencimento_honorario ? new Date(data_vencimento_honorario) : new Date(prazo_entrega),
+        },
+      });
+
+      await logActivity({
+        userId: user.id,
+        action: 'CREATED',
+        entityType: 'Honorario',
+        entityId: honorario.id,
+        details: {
+          valor_total: honorario.valor_total,
+          numero_processo: processo.numero_processo,
         },
       });
     }

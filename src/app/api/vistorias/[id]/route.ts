@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/activity';
 
 export async function DELETE(
   req: Request,
@@ -31,6 +32,18 @@ export async function DELETE(
 
     await prisma.vistoria.delete({
       where: { id }
+    });
+
+    await logActivity({
+      userId: user.id,
+      action: 'DELETED',
+      entityType: 'Vistoria',
+      entityId: id,
+      details: {
+        data: vistoria.data,
+        hora: vistoria.hora,
+        numero_processo: vistoria.processo.numero_processo,
+      },
     });
 
     return NextResponse.json({ success: true });

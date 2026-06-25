@@ -44,14 +44,15 @@ enum StatusPagamento {
 }
 
 model Usuario {
-  id           String     @id @default(uuid())
+  id           String        @id @default(uuid())
   nome         String
-  email        String     @unique
+  email        String        @unique
   senha_hash   String
-  role         Role       @default(perito)
+  role         Role          @default(perito)
   foto_url     String?
-  data_criacao DateTime   @default(now())
+  data_criacao DateTime      @default(now())
   processos    Processo[]
+  activityLogs ActivityLog[]
 }
 
 model Processo {
@@ -101,4 +102,20 @@ model Vistoria {
   endereco    String
   contato     String
 }
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  action     String   // Tipo de ação: 'CREATED', 'UPDATED', 'DELETED', 'MOVED', 'LOGIN', etc.
+  entityType String   // Tipo da entidade afetada: 'Processo', 'Honorario', 'Usuario', 'Vistoria'
+  entityId   String   // ID da entidade afetada
+  details    Json?    // Detalhes adicionais da alteração
+  timestamp  DateTime @default(now())
+  userId     String   // ID do usuário que realizou a ação
+  user       Usuario  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([timestamp])
+}
+
 

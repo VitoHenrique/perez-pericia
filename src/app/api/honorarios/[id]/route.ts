@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/activity';
 
 export async function PUT(
   request: Request,
@@ -40,6 +41,20 @@ export async function PUT(
     const updatedHonorario = await prisma.honorario.update({
       where: { id },
       data: updatedData,
+    });
+
+    await logActivity({
+      userId: user.id,
+      action: 'UPDATED',
+      entityType: 'Honorario',
+      entityId: updatedHonorario.id,
+      details: {
+        valor_total: updatedHonorario.valor_total,
+        status_pagamento: updatedHonorario.status_pagamento,
+        valor_recebido: updatedHonorario.valor_recebido,
+        numero_processo: honorario.processo.numero_processo,
+        campos_alterados: Object.keys(updatedData),
+      },
     });
 
     return NextResponse.json({ success: true, honorario: updatedHonorario });

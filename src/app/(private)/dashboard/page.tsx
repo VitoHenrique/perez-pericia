@@ -30,6 +30,7 @@ import {
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useModal } from '@/components/ModalProvider';
+import NotificationsDropdown from '@/components/NotificationsDropdown';
 
 interface KPIFinanceiro {
   aReceber: number;
@@ -523,13 +524,7 @@ export default function DashboardPage() {
             >
               <Mail className="w-4 h-4" />
             </button>
-            <button 
-              onClick={() => showAlert('Não há novas notificações')}
-              className="w-9 h-9 rounded-full bg-card border border-border/80 flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer shadow-sm relative transition-all"
-            >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-2.5 right-2.5 w-1.5 h-1.5 rounded-full bg-primary" />
-            </button>
+            <NotificationsDropdown />
           </div>
 
           <div className="flex items-center gap-2">

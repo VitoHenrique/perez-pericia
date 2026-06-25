@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Sun, Moon, Plus, Bell, Calendar as CalendarIcon } from 'lucide-react';
+import { Sun, Moon, Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useModal } from '@/components/ModalProvider';
+import NotificationsDropdown from './NotificationsDropdown';
 
 interface TopbarProps {
   userName: string;
@@ -92,13 +93,7 @@ export default function Topbar({ userName, userFotoUrl }: TopbarProps) {
         </button>
 
         {/* Notifications */}
-        <button
-          onClick={() => showAlert('Não há novas notificações.')}
-          className="w-8 h-8 rounded-lg hover:bg-muted/50 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all relative cursor-pointer"
-        >
-          <Bell className="w-3.5 h-3.5" />
-          <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-primary" />
-        </button>
+        <NotificationsDropdown />
 
         {/* User Badge */}
         <div className="flex items-center gap-2 pl-2 border-l border-border h-6">

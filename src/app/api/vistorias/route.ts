@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/activity';
 
 export async function GET() {
   try {
@@ -78,6 +79,18 @@ export async function POST(req: Request) {
         endereco,
         contato: contato || '',
       }
+    });
+
+    await logActivity({
+      userId: user.id,
+      action: 'CREATED',
+      entityType: 'Vistoria',
+      entityId: newVistoria.id,
+      details: {
+        data: newVistoria.data,
+        hora: newVistoria.hora,
+        numero_processo: processo.numero_processo,
+      },
     });
 
     return NextResponse.json({ success: true, vistoria: newVistoria });

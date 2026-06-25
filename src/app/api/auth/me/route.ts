@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser, signJWT } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { logActivity } from '@/lib/activity';
 
 export async function GET() {
   try {
@@ -78,6 +79,18 @@ export async function PUT(request: Request) {
         role: true,
         foto_url: true,
         data_criacao: true,
+      },
+    });
+
+    // Registrar log da alteração
+    await logActivity({
+      userId: user.id,
+      action: 'UPDATED',
+      entityType: 'Usuario',
+      entityId: updatedUser.id,
+      details: {
+        nome: updatedUser.nome,
+        email: updatedUser.email,
       },
     });
 

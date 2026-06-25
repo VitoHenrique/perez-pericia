@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/activity';
 
 export async function POST(request: Request) {
   try {
@@ -34,6 +35,17 @@ export async function POST(request: Request) {
       where: { id: user.id },
       data: {
         foto_url: url,
+      },
+    });
+
+    await logActivity({
+      userId: user.id,
+      action: 'UPDATED',
+      entityType: 'Usuario',
+      entityId: user.id,
+      details: {
+        foto_url_atualizada: true,
+        nome: user.nome,
       },
     });
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { logActivity } from '@/lib/activity';
 
 export async function GET(
   request: Request,
@@ -103,6 +104,21 @@ export async function PUT(
       },
     });
 
+    const statusChanged = status !== undefined && status !== processo.status;
+    await logActivity({
+      userId: user.id,
+      action: statusChanged ? 'MOVED' : 'UPDATED',
+      entityType: 'Processo',
+      entityId: updatedProcesso.id,
+      details: {
+        numero_processo: updatedProcesso.numero_processo,
+        status_anterior: processo.status,
+        status_novo: updatedProcesso.status,
+        status_mudou: statusChanged,
+        campos_alterados: Object.keys(updatedData),
+      },
+    });
+
     return NextResponse.json({ success: true, processo: updatedProcesso });
   } catch (error: any) {
     console.error('Erro ao atualizar processo:', error);
@@ -136,6 +152,17 @@ export async function DELETE(
 
     await prisma.processo.delete({
       where: { id },
+    });
+
+    await logActivity({
+      userId: user.id,
+      action: 'DELETED',
+      entityType: 'Processo',
+      entityId: id,
+      details: {
+        numero_processo: processo.numero_processo,
+        vara_comarca: processo.vara_comarca,
+      },
     });
 
     return NextResponse.json({ success: true, message: 'Processo deletado com sucesso.' });
