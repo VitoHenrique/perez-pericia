@@ -15,6 +15,7 @@ export async function GET() {
         nome: true,
         email: true,
         role: true,
+        foto_url: true,
         data_criacao: true,
         _count: {
           select: { processos: true },

@@ -23,6 +23,7 @@ interface TeamMember {
   nome: string;
   email: string;
   role: string;
+  foto_url?: string | null;
   data_criacao: string;
   _count: {
     processos: number;
@@ -265,9 +266,17 @@ export default function EquipePage() {
                     {/* Member Details */}
                     <div className="flex items-start gap-4">
                       {/* Avatar */}
-                      <div className={`w-12 h-12 rounded-full ${getColorClass(member.nome)} flex items-center justify-center font-extrabold text-sm shrink-0 border border-border/10 shadow-sm`}>
-                        {getInitials(member.nome)}
-                      </div>
+                      {member.foto_url ? (
+                        <img
+                          src={member.foto_url}
+                          alt={member.nome}
+                          className="w-12 h-12 rounded-full object-cover shrink-0 border border-border/10 shadow-sm"
+                        />
+                      ) : (
+                        <div className={`w-12 h-12 rounded-full ${getColorClass(member.nome)} flex items-center justify-center font-extrabold text-sm shrink-0 border border-border/10 shadow-sm`}>
+                          {getInitials(member.nome)}
+                        </div>
+                      )}
 
                       <div className="space-y-1 min-w-0">
                         <span className={`text-[9px] font-bold px-2.5 py-0.5 border rounded-full uppercase tracking-wider inline-block ${getRoleBadgeStyle(member.role)}`}>
