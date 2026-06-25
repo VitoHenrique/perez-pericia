@@ -67,6 +67,7 @@ interface TeamMember {
   nome: string;
   email: string;
   role: string;
+  foto_url?: string | null;
 }
 
 interface DashboardData {
@@ -103,6 +104,7 @@ interface UserInfo {
 interface Diligencia {
   id: string;
   perito: string;
+  peritoFotoUrl?: string | null;
   tipo: string;
   desc: string;
   data: string;
@@ -181,6 +183,7 @@ export default function DashboardPage() {
       const mapped = (vistoriasJson.vistorias || []).map((v: any) => ({
         id: v.id,
         perito: v.processo?.usuario?.nome || 'N/A',
+        peritoFotoUrl: v.processo?.usuario?.foto_url || null,
         tipo: v.processo?.tipo_pericia || 'Vistoria',
         desc: `${v.endereco || 'Endereço não cadastrado'} - Contato: ${v.contato || 'N/A'}`,
         data: v.data,
@@ -484,9 +487,17 @@ export default function DashboardPage() {
                   {filteredVistorias.slice(0, 3).map((v) => (
                     <tr key={v.id} className="hover:bg-muted/10 transition-colors">
                       <td className="py-3.5 px-4 flex items-center gap-2.5">
-                        <div className="w-6.5 h-6.5 rounded-full bg-violet-50 text-primary border border-primary/10 flex items-center justify-center font-bold text-[9px] shrink-0">
-                          {v.perito.charAt(0).toUpperCase()}
-                        </div>
+                        {v.peritoFotoUrl ? (
+                          <img
+                            src={v.peritoFotoUrl}
+                            alt={v.perito}
+                            className="w-6.5 h-6.5 rounded-full object-cover shrink-0 border border-primary/10 shadow-sm"
+                          />
+                        ) : (
+                          <div className={`w-6.5 h-6.5 rounded-full ${getColorClass(v.perito)} flex items-center justify-center font-bold text-[9px] shrink-0 border border-primary/10 shadow-sm`}>
+                            {getInitials(v.perito)}
+                          </div>
+                        )}
                         <div className="flex flex-col min-w-0">
                           <span className="font-bold truncate text-foreground">{v.perito}</span>
                         </div>
@@ -618,33 +629,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Weekly Performance Bar Chart */}
-          <div className="space-y-2 border-t border-border/40 pt-4">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Faturamento (Mil R$)</span>
-            <div className="h-28 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barChartData} margin={{ top: 5, right: 0, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" strokeOpacity={0.2} />
-                  <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={9} tickLine={false} axisLine={false} />
-                  <YAxis stroke="var(--muted-foreground)" fontSize={9} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    cursor={{ fill: 'var(--muted)', opacity: 0.15 }}
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <div className="glass-effect p-1.5 rounded shadow-sm text-[9px] font-bold text-foreground">
-                            {payload[0].value} Mil
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar dataKey="value" fill="var(--primary)" radius={[3, 3, 0, 0]} barSize={14} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+
         </div>
 
         {/* Office Team Members (Your Mentor) */}
@@ -656,22 +641,22 @@ export default function DashboardPage() {
           <div className="space-y-3.5">
             {data.team && data.team.length > 0 ? (
               data.team.map((member) => (
-                <div key={member.id} className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`w-8 h-8 rounded-full ${getColorClass(member.nome)} flex items-center justify-center font-bold text-[11px] shrink-0`}>
+                <div key={member.id} className="flex items-center gap-2.5">
+                  {member.foto_url ? (
+                    <img
+                      src={member.foto_url}
+                      alt={member.nome}
+                      className="w-8 h-8 rounded-full object-cover shrink-0 shadow-sm border border-border/50"
+                    />
+                  ) : (
+                    <div className={`w-8 h-8 rounded-full ${getColorClass(member.nome)} flex items-center justify-center font-bold text-[11px] shrink-0 shadow-sm`}>
                       {getInitials(member.nome)}
                     </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[11px] font-bold text-foreground truncate leading-tight">{member.nome}</span>
-                      <span className="text-[8px] font-bold text-muted-foreground/75 mt-0.5 leading-none">{getRoleLabel(member.role)}</span>
-                    </div>
+                  )}
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[11px] font-bold text-foreground truncate leading-tight">{member.nome}</span>
+                    <span className="text-[8px] font-bold text-muted-foreground/75 mt-0.5 leading-none">{getRoleLabel(member.role)}</span>
                   </div>
-                  <button 
-                    onClick={() => showAlert(`Mensagem enviada para ${member.nome}`)}
-                    className="text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 rounded-full px-3 py-1 hover:bg-primary/20 transition-all shrink-0"
-                  >
-                    Mensagem
-                  </button>
                 </div>
               ))
             ) : (
