@@ -51,10 +51,28 @@ export default function ConfiguracoesPage() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaveLoading(true);
-    // Simulating profile save
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    await showAlert('Perfil atualizado com sucesso! (Função simulada no MVP)');
-    setSaveLoading(false);
+
+    try {
+      const res = await fetch('/api/auth/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: userName,
+          email: userEmail,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao atualizar os dados.');
+
+      await showAlert('Perfil atualizado com sucesso!');
+      window.location.reload();
+    } catch (err: any) {
+      console.error(err);
+      await showAlert(err.message || 'Erro ao salvar os dados.');
+    } finally {
+      setSaveLoading(false);
+    }
   };
 
   if (loading) {
