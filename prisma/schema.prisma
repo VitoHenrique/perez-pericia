@@ -49,6 +49,7 @@ model Usuario {
   email        String     @unique
   senha_hash   String
   role         Role       @default(perito)
+  foto_url     String?
   data_criacao DateTime   @default(now())
   processos    Processo[]
 }

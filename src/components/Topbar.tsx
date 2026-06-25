@@ -9,9 +9,10 @@ import { useModal } from '@/components/ModalProvider';
 
 interface TopbarProps {
   userName: string;
+  userFotoUrl?: string | null;
 }
 
-export default function Topbar({ userName }: TopbarProps) {
+export default function Topbar({ userName, userFotoUrl }: TopbarProps) {
   const { showAlert } = useModal();
   const pathname = usePathname();
   const [theme, setTheme] = useState('light');
@@ -101,9 +102,17 @@ export default function Topbar({ userName }: TopbarProps) {
 
         {/* User Badge */}
         <div className="flex items-center gap-2 pl-2 border-l border-border h-6">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-primary to-violet-400 flex items-center justify-center text-white font-extrabold text-[12px] shadow-sm select-none">
-            {userName.charAt(0).toUpperCase()}
-          </div>
+          {userFotoUrl ? (
+            <img
+              src={userFotoUrl}
+              alt={userName}
+              className="w-7 h-7 rounded-full object-cover shadow-sm shrink-0"
+            />
+          ) : (
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-primary to-violet-400 flex items-center justify-center text-white font-extrabold text-[12px] shadow-sm select-none">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+          )}
           <span className="hidden md:inline text-[11px] font-bold text-foreground max-w-[120px] truncate">
             {userName}
           </span>

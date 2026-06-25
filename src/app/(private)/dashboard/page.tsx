@@ -95,6 +95,7 @@ interface UserInfo {
   nome: string;
   email: string;
   role: string;
+  foto_url?: string | null;
 }
 
 interface Diligencia {
@@ -536,9 +537,17 @@ export default function DashboardPage() {
               <span className="text-xs font-bold text-foreground block leading-tight">{user?.nome || 'Jason Ranti'}</span>
               <span className="text-[9px] font-bold text-muted-foreground block capitalize tracking-wider">{user?.role || 'Perito'}</span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-violet-400 flex items-center justify-center text-white font-extrabold text-[12px] shadow-sm select-none shrink-0">
-              {user?.nome ? user.nome.charAt(0).toUpperCase() : 'J'}
-            </div>
+            {user?.foto_url ? (
+              <img
+                src={user.foto_url}
+                alt={user.nome}
+                className="w-8 h-8 rounded-full object-cover shadow-sm shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-violet-400 flex items-center justify-center text-white font-extrabold text-[12px] shadow-sm select-none shrink-0">
+                {user?.nome ? user.nome.charAt(0).toUpperCase() : 'J'}
+              </div>
+            )}
           </div>
         </div>
 
@@ -577,9 +586,17 @@ export default function DashboardPage() {
               </svg>
               
               {/* Circular Avatar in the center */}
-              <div className="absolute w-17 h-17 rounded-full bg-gradient-to-tr from-primary to-violet-400 flex items-center justify-center text-white font-extrabold text-xl shadow-md border-2 border-card">
-                {user?.nome ? user.nome.charAt(0).toUpperCase() : 'J'}
-              </div>
+              {user?.foto_url ? (
+                <img
+                  src={user.foto_url}
+                  alt={user.nome}
+                  className="absolute w-17 h-17 rounded-full object-cover shadow-md border-2 border-card"
+                />
+              ) : (
+                <div className="absolute w-17 h-17 rounded-full bg-gradient-to-tr from-primary to-violet-400 flex items-center justify-center text-white font-extrabold text-xl shadow-md border-2 border-card">
+                  {user?.nome ? user.nome.charAt(0).toUpperCase() : 'J'}
+                </div>
+              )}
 
               {/* Percentage Badge Top Right */}
               <div className="absolute top-0.5 right-0.5 bg-primary text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shadow-sm">

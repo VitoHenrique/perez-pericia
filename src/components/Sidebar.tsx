@@ -26,12 +26,14 @@ interface SidebarProps {
     nome: string;
     email: string;
     role: string;
+    foto_url?: string | null;
   } | null;
   team: Array<{
     id: string;
     nome: string;
     email: string;
     role: string;
+    foto_url?: string | null;
   }>;
 }
 
@@ -183,9 +185,17 @@ export default function Sidebar({ user, team }: SidebarProps) {
             <div className="space-y-2.5 px-3">
               {(team || []).map((member) => (
                 <div key={member.id} className="flex items-center gap-2.5 overflow-hidden">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm ${getColorClass(member.nome)}`}>
-                    {getInitials(member.nome)}
-                  </div>
+                  {member.foto_url ? (
+                    <img
+                      src={member.foto_url}
+                      alt={member.nome}
+                      className="w-7 h-7 rounded-full object-cover shrink-0 shadow-sm"
+                    />
+                  ) : (
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm ${getColorClass(member.nome)}`}>
+                      {getInitials(member.nome)}
+                    </div>
+                  )}
                   {!collapsed && (
                     <div className="flex flex-col min-w-0">
                       <span className="text-[11px] font-bold text-foreground truncate leading-tight">{member.nome}</span>

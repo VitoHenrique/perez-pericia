@@ -76,6 +76,7 @@ export async function PUT(request: Request) {
         nome: true,
         email: true,
         role: true,
+        foto_url: true,
         data_criacao: true,
       },
     });

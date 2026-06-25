@@ -22,6 +22,7 @@ export default async function PrivateLayout({
       nome: true,
       email: true,
       role: true,
+      foto_url: true,
     },
     orderBy: {
       nome: 'asc',
@@ -36,7 +37,7 @@ export default async function PrivateLayout({
       {/* Main Panel */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar Info & Settings */}
-        <Topbar userName={user.nome} />
+        <Topbar userName={user.nome} userFotoUrl={user.foto_url} />
 
         {/* Dynamic page content */}
         <main className="flex-1 overflow-y-auto bg-background/50 p-6">

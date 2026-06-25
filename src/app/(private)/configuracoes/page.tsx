@@ -10,9 +10,11 @@ export default function ConfiguracoesPage() {
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [userRole, setUserRole] = useState('');
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     // Get Theme
@@ -27,6 +29,7 @@ export default function ConfiguracoesPage() {
           setUserName(data.user.nome);
           setUserEmail(data.user.email);
           setUserRole(data.user.role);
+          setFotoUrl(data.user.foto_url || null);
         }
         setLoading(false);
       })
@@ -75,6 +78,34 @@ export default function ConfiguracoesPage() {
     }
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/auth/foto', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro no upload.');
+
+      setFotoUrl(data.foto_url);
+      await showAlert('Foto de perfil atualizada com sucesso!');
+      window.location.reload();
+    } catch (err: any) {
+      console.error(err);
+      await showAlert(err.message || 'Erro ao carregar a foto.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[70vh] gap-3">
@@ -97,20 +128,67 @@ export default function ConfiguracoesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Navigation Sidebar */}
-        <div className="bg-card border border-border rounded-2xl p-4 h-fit space-y-1">
-          <button className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold bg-primary text-white flex items-center gap-2 shadow-md shadow-primary/10">
-            <User className="w-4.5 h-4.5" />
-            Meu Perfil
-          </button>
-          <button onClick={() => showAlert('Disponível na versão final.')} className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-background hover:text-foreground transition-all flex items-center gap-2">
-            <Shield className="w-4.5 h-4.5" />
-            Segurança & Senha
-          </button>
-          <button onClick={() => showAlert('Disponível na versão final.')} className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-background hover:text-foreground transition-all flex items-center gap-2">
-            <Bell className="w-4.5 h-4.5" />
-            Notificações
-          </button>
+        {/* Navigation Sidebar & Photo upload Panel */}
+        <div className="space-y-6">
+          {/* Navigation Sidebar */}
+          <div className="bg-card border border-border rounded-2xl p-4 h-fit space-y-1">
+            <button className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold bg-primary text-white flex items-center gap-2 shadow-md shadow-primary/10">
+              <User className="w-4.5 h-4.5" />
+              Meu Perfil
+            </button>
+            <button onClick={() => showAlert('Disponível na versão final.')} className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-background hover:text-foreground transition-all flex items-center gap-2">
+              <Shield className="w-4.5 h-4.5" />
+              Segurança & Senha
+            </button>
+            <button onClick={() => showAlert('Disponível na versão final.')} className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-background hover:text-foreground transition-all flex items-center gap-2">
+              <Bell className="w-4.5 h-4.5" />
+              Notificações
+            </button>
+          </div>
+
+          {/* Profile Picture Card */}
+          <div className="bg-card border border-border p-6 rounded-2xl flex flex-col items-center justify-center space-y-4">
+            <h3 className="font-outfit text-sm font-bold text-foreground self-start border-b border-border pb-3 w-full text-left flex items-center gap-2">
+              <User className="w-5 h-5 text-primary shrink-0" />
+              Foto de Perfil
+            </h3>
+
+            <div className="relative group mt-2">
+              {fotoUrl ? (
+                <img
+                  src={fotoUrl}
+                  alt="Foto de perfil"
+                  className="w-28 h-28 rounded-full object-cover border-2 border-primary shadow-lg"
+                />
+              ) : (
+                <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-primary to-violet-400 flex items-center justify-center text-white font-extrabold text-3xl shadow-lg">
+                  {userName ? userName.charAt(0).toUpperCase() : 'U'}
+                </div>
+              )}
+
+              {uploading && (
+                <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 animate-spin text-white" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col items-center gap-1.5 w-full">
+              <label className="cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-[10px] font-bold px-3 py-2 rounded-xl transition-all text-center w-full block">
+                {fotoUrl ? 'Alterar Foto' : 'Enviar Foto'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  disabled={uploading}
+                  className="hidden"
+                />
+              </label>
+              <p className="text-[9px] text-muted-foreground text-center">
+                Formatos aceitos: JPG, PNG. Máx: 5MB
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Content Panel */}
