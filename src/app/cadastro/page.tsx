@@ -12,7 +12,7 @@ function RegisterForm() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [role, setRole] = useState('perito');
+  const [role, setRole] = useState('assistente');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -127,29 +127,7 @@ function RegisterForm() {
               </div>
             </div>
 
-            <div>
-              <label htmlFor="register-role" className="block text-foreground mb-1.5">
-                Seu Perfil Profissional
-              </label>
-              <div className="relative rounded-lg shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
-                  <Award className="w-4 h-4" />
-                </div>
-                <select
-                  id="register-role"
-                  name="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="block w-full pl-9 pr-10 py-2.5 bg-background/50 border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent text-xs text-foreground font-medium transition-all appearance-none cursor-pointer"
-                >
-                  <option value="perito" className="bg-card text-foreground">Perito Judicial</option>
-                  <option value="assistente" className="bg-card text-foreground">Assistente Técnico</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-muted-foreground">
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            </div>
+
 
             <div>
               <label htmlFor="register-password" className="block text-foreground mb-1.5">

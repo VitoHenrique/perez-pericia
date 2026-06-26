@@ -29,7 +29,16 @@ export async function POST(request: Request) {
     const senha_hash = await hashPassword(senha);
 
     const userCount = await prisma.usuario.count();
-    const finalRole = userCount === 0 ? 'admin' : (role || 'perito');
+    const finalRole = userCount === 0 ? 'admin' : 'assistente';
+
+    let cargoId: string | null = null;
+    const cargoName = finalRole === 'admin' ? 'Desenvolvedor' : 'Assistente';
+    const cargo = await prisma.cargo.findFirst({
+      where: { nome: { equals: cargoName, mode: 'insensitive' } },
+    });
+    if (cargo) {
+      cargoId = cargo.id;
+    }
 
     const user = await prisma.usuario.create({
       data: {
@@ -37,6 +46,7 @@ export async function POST(request: Request) {
         email: emailLower,
         senha_hash,
         role: finalRole as any,
+        cargoId,
       },
     });
 
