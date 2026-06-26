@@ -71,6 +71,11 @@ export async function PUT(
             permissao: true,
           },
         },
+        _count: {
+          select: {
+            usuarios: true,
+          },
+        },
       },
     });
 

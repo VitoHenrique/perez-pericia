@@ -16,6 +16,11 @@ export async function GET() {
             permissao: true,
           },
         },
+        _count: {
+          select: {
+            usuarios: true,
+          },
+        },
       },
       orderBy: { nome: 'asc' },
     });
@@ -56,6 +61,11 @@ export async function POST(request: Request) {
         permissoes: {
           include: {
             permissao: true,
+          },
+        },
+        _count: {
+          select: {
+            usuarios: true,
           },
         },
       },
