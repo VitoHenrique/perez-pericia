@@ -12,7 +12,8 @@ import {
   Edit3,
   Filter,
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  ShieldAlert
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -47,6 +48,7 @@ export default function FinanceiroPage() {
   const [kpis, setKpis] = useState<FinancialKPIS | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isForbidden, setIsForbidden] = useState(false);
   
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -63,8 +65,14 @@ export default function FinanceiroPage() {
   const fetchFinanceiroData = async () => {
     setLoading(true);
     setError('');
+    setIsForbidden(false);
     try {
       const res = await fetch('/api/financeiro');
+      if (res.status === 403) {
+        setIsForbidden(true);
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Acesso negado: permissão insuficiente.');
+      }
       if (!res.ok) throw new Error('Não foi possível obter os dados financeiros.');
       const data = await res.json();
       setHonorarios(data.honorarios || []);
@@ -130,6 +138,22 @@ export default function FinanceiroPage() {
       <div className="flex flex-col items-center justify-center h-[70vh] gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Carregando dados financeiros...</span>
+      </div>
+    );
+  }
+
+  if (isForbidden) {
+    return (
+      <div className="p-6 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-4.5 max-w-2xl">
+        <div className="w-10 h-10 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center shrink-0">
+          <ShieldAlert className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="text-amber-500 font-outfit text-sm font-extrabold uppercase tracking-wide">Acesso Restrito</h3>
+          <p className="text-muted-foreground text-xs font-semibold mt-1 leading-relaxed">
+            Seu cargo atual não possui permissões administrativas para visualizar o fluxo de caixa ou dados financeiros do escritório.
+          </p>
+        </div>
       </div>
     );
   }
