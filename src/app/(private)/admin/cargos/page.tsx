@@ -50,7 +50,29 @@ const CATEGORY_MAP: Record<string, { label: string; color: string; icon: any }> 
   vistorias: { label: 'Vistorias', color: 'text-amber-500 bg-amber-500/10 border-amber-500/20', icon: MapPin },
   admin: { label: 'Administração', color: 'text-purple-500 bg-purple-500/10 border-purple-500/20', icon: Settings },
   cargos: { label: 'Acessos', color: 'text-rose-500 bg-rose-500/10 border-rose-500/20', icon: Shield },
+  data: { label: 'Acessos', color: 'text-rose-500 bg-rose-500/10 border-rose-500/20', icon: Shield },
 };
+
+const PERMISSION_FRIENDLY_NAMES: Record<string, string> = {
+  'processos.view': 'Visualizar Processos',
+  'processos.create': 'Criar Novos Processos',
+  'processos.edit': 'Editar Processos',
+  'processos.delete': 'Excluir Processos',
+  'honorarios.view': 'Visualizar Financeiro',
+  'honorarios.create': 'Adicionar Honorários',
+  'honorarios.edit': 'Editar Honorários',
+  'honorarios.delete': 'Excluir Honorários',
+  'vistorias.view': 'Visualizar Vistorias',
+  'vistorias.create': 'Agendar Vistorias',
+  'vistorias.delete': 'Excluir Vistorias',
+  'admin.view': 'Acesso Administrativo',
+  'cargos.manage': 'Gerenciar Cargos',
+  'data.view_all': 'Visualizar Todos os Dados',
+};
+
+function getFriendlyPermissionName(name: string): string {
+  return PERMISSION_FRIENDLY_NAMES[name] || name;
+}
 
 function getPermissionCategory(name: string) {
   const prefix = name.split('.')[0];
@@ -340,7 +362,7 @@ export default function CargosPage() {
                             className={`text-[9px] font-bold px-2 py-0.5 border rounded-full ${cat.color}`}
                             title={cp.permissao.descricao}
                           >
-                            {cp.permissao.nome}
+                            {getFriendlyPermissionName(cp.permissao.nome)}
                           </span>
                         );
                       })}
@@ -520,7 +542,7 @@ export default function CargosPage() {
                                   </div>
                                   <div>
                                     <span className="text-[11px] font-bold text-foreground block">
-                                      {perm.nome}
+                                      {getFriendlyPermissionName(perm.nome)}
                                     </span>
                                     <span className="text-[9px] text-muted-foreground leading-normal block mt-0.5">
                                       {perm.descricao}
