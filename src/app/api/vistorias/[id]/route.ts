@@ -30,7 +30,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Vistoria não encontrada.' }, { status: 404 });
     }
 
-    if (user.role !== 'admin' && vistoria.processo.usuario_id !== user.id) {
+    if (!hasPermission(user, ['data.view_all']) && vistoria.processo.usuario_id !== user.id) {
       return NextResponse.json({ error: 'Acesso negado.' }, { status: 403 });
     }
 

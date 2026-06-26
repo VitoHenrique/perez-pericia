@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     const whereClause: any = {};
-    if (user.role !== 'admin') {
+    if (!hasPermission(user, ['data.view_all'])) {
       whereClause.processo = {
         usuario_id: user.id,
       };

@@ -15,7 +15,7 @@ export async function GET() {
     }
 
     const whereClause: any = {};
-    if (user.role !== 'admin') {
+    if (!hasPermission(user, ['data.view_all'])) {
       whereClause.processo = {
         usuario_id: user.id
       };
@@ -76,8 +76,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Processo não encontrado.' }, { status: 404 });
     }
 
-    if (user.role !== 'admin' && processo.usuario_id !== user.id) {
-      return NextResponse.json({ error: 'Acesso negado.' }, { status: 403 });
+    if (!hasPermission(user, ['data.view_all']) && processo.usuario_id !== user.id) {
+      return NextResponse.json({ error: 'Acesso negado: você só pode agendar vistorias para seus próprios processos.' }, { status: 403 });
     }
 
     const newVistoria = await prisma.vistoria.create({

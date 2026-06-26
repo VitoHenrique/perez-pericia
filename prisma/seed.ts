@@ -25,6 +25,7 @@ async function main() {
     // Administração
     { name: 'admin.view', description: 'Acesso geral ao painel de administração' },
     { name: 'cargos.manage', description: 'Gerenciar cargos e permissões do escritório' },
+    { name: 'data.view_all', description: 'Visualizar dados de todos os colaboradores (processos e agenda)' },
   ];
 
   console.log('Criando permissões...');

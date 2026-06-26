@@ -38,7 +38,7 @@ export async function GET(
       return NextResponse.json({ error: 'Processo não encontrado' }, { status: 404 });
     }
 
-    if (user.role !== 'admin' && processo.usuario_id !== user.id) {
+    if (!hasPermission(user, ['data.view_all']) && processo.usuario_id !== user.id) {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
@@ -74,7 +74,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Processo não encontrado' }, { status: 404 });
     }
 
-    if (user.role !== 'admin' && processo.usuario_id !== user.id) {
+    if (!hasPermission(user, ['data.view_all']) && processo.usuario_id !== user.id) {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
@@ -158,7 +158,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Processo não encontrado' }, { status: 404 });
     }
 
-    if (user.role !== 'admin' && processo.usuario_id !== user.id) {
+    if (!hasPermission(user, ['data.view_all']) && processo.usuario_id !== user.id) {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 

@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     
     const whereClause: any = {};
 
-    if (user.role !== 'admin') {
+    if (!hasPermission(user, ['data.view_all'])) {
       whereClause.usuario_id = user.id;
     }
 

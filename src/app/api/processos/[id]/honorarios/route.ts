@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, hasPermission } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 
 export async function POST(
@@ -25,7 +25,7 @@ export async function POST(
       return NextResponse.json({ error: 'Processo não encontrado' }, { status: 404 });
     }
 
-    if (user.role !== 'admin' && processo.usuario_id !== user.id) {
+    if (!hasPermission(user, ['data.view_all']) && processo.usuario_id !== user.id) {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 

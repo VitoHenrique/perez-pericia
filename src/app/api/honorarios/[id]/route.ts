@@ -32,7 +32,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Honorário não encontrado' }, { status: 404 });
     }
 
-    if (user.role !== 'admin' && honorario.processo.usuario_id !== user.id) {
+    if (!hasPermission(user, ['data.view_all']) && honorario.processo.usuario_id !== user.id) {
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 

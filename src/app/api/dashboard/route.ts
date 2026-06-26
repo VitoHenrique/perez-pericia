@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, hasPermission } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     const whereClause: any = {};
-    if (user.role !== 'admin') {
+    if (!hasPermission(user, ['data.view_all'])) {
       whereClause.usuario_id = user.id;
     }
 
