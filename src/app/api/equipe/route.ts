@@ -20,6 +20,11 @@ export async function GET() {
         _count: {
           select: { processos: true },
         },
+        cargo: {
+          select: {
+            nome: true,
+          },
+        },
       },
       orderBy: {
         nome: 'asc',

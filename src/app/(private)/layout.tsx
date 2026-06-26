@@ -23,6 +23,11 @@ export default async function PrivateLayout({
       email: true,
       role: true,
       foto_url: true,
+      cargo: {
+        select: {
+          nome: true,
+        },
+      },
     },
     orderBy: {
       nome: 'asc',

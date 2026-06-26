@@ -28,7 +28,7 @@ export default function ConfiguracoesPage() {
         if (data.user) {
           setUserName(data.user.nome);
           setUserEmail(data.user.email);
-          setUserRole(data.user.role);
+          setUserRole(data.user.cargo?.nome || data.user.role);
           setFotoUrl(data.user.foto_url || null);
         }
         setLoading(false);

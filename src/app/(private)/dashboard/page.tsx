@@ -68,6 +68,9 @@ interface TeamMember {
   email: string;
   role: string;
   foto_url?: string | null;
+  cargo?: {
+    nome: string;
+  } | null;
 }
 
 interface DashboardData {
@@ -91,6 +94,9 @@ interface Processo {
     nome: string;
     role: string;
     foto_url?: string | null;
+    cargo?: {
+      nome: string;
+    } | null;
   };
 }
 
@@ -454,7 +460,7 @@ export default function DashboardPage() {
                         {p.usuario?.nome || 'Fernando Perez'}
                       </span>
                       <span className="text-[8px] font-semibold text-muted-foreground/75 leading-none">
-                        {p.usuario?.role ? getRoleLabel(p.usuario.role) : 'Perito'}
+                        {p.usuario?.cargo?.nome || (p.usuario?.role ? getRoleLabel(p.usuario.role) : 'Perito')}
                       </span>
                     </div>
                   </div>
@@ -655,7 +661,7 @@ export default function DashboardPage() {
                   )}
                   <div className="flex flex-col min-w-0">
                     <span className="text-[11px] font-bold text-foreground truncate leading-tight">{member.nome}</span>
-                    <span className="text-[8px] font-bold text-muted-foreground/75 mt-0.5 leading-none">{getRoleLabel(member.role)}</span>
+                    <span className="text-[8px] font-bold text-muted-foreground/75 mt-0.5 leading-none">{member.cargo?.nome || getRoleLabel(member.role)}</span>
                   </div>
                 </div>
               ))

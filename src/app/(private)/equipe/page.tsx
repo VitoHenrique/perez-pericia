@@ -28,6 +28,9 @@ interface TeamMember {
   _count: {
     processos: number;
   };
+  cargo?: {
+    nome: string;
+  } | null;
 }
 
 export default function EquipePage() {
@@ -280,7 +283,7 @@ export default function EquipePage() {
 
                       <div className="space-y-1 min-w-0">
                         <span className={`text-[9px] font-bold px-2.5 py-0.5 border rounded-full uppercase tracking-wider inline-block ${getRoleBadgeStyle(member.role)}`}>
-                          {getRoleLabel(member.role)}
+                          {member.cargo?.nome || getRoleLabel(member.role)}
                         </span>
                         <h4 className="text-xs font-extrabold text-foreground truncate block leading-snug">
                           {member.nome}

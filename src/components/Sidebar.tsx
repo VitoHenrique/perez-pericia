@@ -27,6 +27,9 @@ interface SidebarProps {
     email: string;
     role: string;
     foto_url?: string | null;
+    cargo?: {
+      nome: string;
+    } | null;
   } | null;
   team: Array<{
     id: string;
@@ -34,6 +37,9 @@ interface SidebarProps {
     email: string;
     role: string;
     foto_url?: string | null;
+    cargo?: {
+      nome: string;
+    } | null;
   }>;
 }
 
@@ -198,7 +204,7 @@ export default function Sidebar({ user, team }: SidebarProps) {
                 {!collapsed && (
                   <div className="flex flex-col min-w-0">
                     <span className="text-[11px] font-bold text-foreground truncate leading-tight">{member.nome}</span>
-                    <span className="text-[8px] font-bold text-muted-foreground/75 truncate mt-0.5">{getRoleLabel(member.role)}</span>
+                    <span className="text-[8px] font-bold text-muted-foreground/75 truncate mt-0.5">{member.cargo?.nome || getRoleLabel(member.role)}</span>
                   </div>
                 )}
               </div>
@@ -296,7 +302,7 @@ export default function Sidebar({ user, team }: SidebarProps) {
                 <Briefcase className="w-2.5 h-2.5 text-muted-foreground" />
               )}
               <span className="text-[8px] font-bold text-muted-foreground capitalize tracking-wider uppercase">
-                {user.role === 'admin' ? 'Administrador' : user.role === 'perito' ? 'Perito' : 'Assistente'}
+                {user.cargo?.nome || (user.role === 'admin' ? 'Administrador' : user.role === 'perito' ? 'Perito' : 'Assistente')}
               </span>
             </div>
           </div>

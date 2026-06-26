@@ -48,6 +48,11 @@ export async function GET(request: Request) {
             email: true,
             role: true,
             foto_url: true,
+            cargo: {
+              select: {
+                nome: true,
+              },
+            },
           }
         }
       },
