@@ -20,17 +20,25 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
+    const base64Data = buffer.toString('base64');
+    const mimeType = file.type || 'image/png';
+    const dataUrl = `data:${mimeType};base64,${base64Data}`;
 
-    const uniqueFilename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-    const filePath = join(uploadDir, uniqueFilename);
-    
-    await writeFile(filePath, buffer);
+    try {
+      const uploadDir = join(process.cwd(), 'public', 'uploads');
+      await mkdir(uploadDir, { recursive: true });
 
-    const url = `/uploads/${uniqueFilename}`;
+      const uniqueFilename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+      const filePath = join(uploadDir, uniqueFilename);
+      
+      await writeFile(filePath, buffer);
 
-    return NextResponse.json({ success: true, url });
+      const url = `/uploads/${uniqueFilename}`;
+      return NextResponse.json({ success: true, url });
+    } catch (fsError) {
+      console.warn('Filesystem write failed, falling back to base64 Data URL:', fsError);
+      return NextResponse.json({ success: true, url: dataUrl });
+    }
   } catch (error: any) {
     console.error('Erro no upload de arquivo:', error);
     return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });

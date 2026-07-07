@@ -38,16 +38,25 @@ export async function POST(
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    
-    await mkdir(uploadDir, { recursive: true });
+    const base64Data = buffer.toString('base64');
+    const mimeType = file.type || 'application/octet-stream';
+    const dataUrl = `data:${mimeType};base64,${base64Data}`;
 
-    const uniqueFilename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-    const filePath = join(uploadDir, uniqueFilename);
-    
-    await writeFile(filePath, buffer);
+    let url = '';
 
-    const url = `/uploads/${uniqueFilename}`;
+    try {
+      const uploadDir = join(process.cwd(), 'public', 'uploads');
+      await mkdir(uploadDir, { recursive: true });
+
+      const uniqueFilename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+      const filePath = join(uploadDir, uniqueFilename);
+      
+      await writeFile(filePath, buffer);
+      url = `/uploads/${uniqueFilename}`;
+    } catch (fsError) {
+      console.warn('Filesystem write failed, falling back to base64 Data URL:', fsError);
+      url = dataUrl;
+    }
 
     const documento = await prisma.documento.create({
       data: {
