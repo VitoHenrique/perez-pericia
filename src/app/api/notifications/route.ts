@@ -2,20 +2,24 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser, hasPermission } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const { searchParams } = new URL(request.url);
+    const all = searchParams.get('all') === 'true';
 
-    const whereClause: any = {
-      timestamp: {
+    const whereClause: any = {};
+
+    if (!all) {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      whereClause.timestamp = {
         gte: twentyFourHoursAgo,
-      },
-    };
+      };
+    }
 
     if (!hasPermission(user, ['data.view_all'])) {
       // Obter IDs dos processos pertencentes ao usuário para cruzar referências de logs

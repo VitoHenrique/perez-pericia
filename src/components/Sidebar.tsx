@@ -15,7 +15,8 @@ import {
   ChevronRight,
   Shield,
   Briefcase,
-  Sparkles
+  Sparkles,
+  Database
 } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -54,6 +55,7 @@ export default function Sidebar({ user, team }: SidebarProps) {
     { name: 'Kanban', path: '/kanban', icon: Layers },
     { name: 'Financeiro', path: '/financeiro', icon: DollarSign },
     { name: 'Agenda & Diligências', path: '/agenda', icon: Calendar },
+    { name: 'Registro Geral', path: '/registro-geral', icon: Database },
   ];
 
   const getInitials = (name: string) => {
