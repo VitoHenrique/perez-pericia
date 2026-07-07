@@ -54,7 +54,6 @@ export default function Sidebar({ user, team }: SidebarProps) {
     { name: 'Kanban', path: '/kanban', icon: Layers },
     { name: 'Financeiro', path: '/financeiro', icon: DollarSign },
     { name: 'Agenda & Diligências', path: '/agenda', icon: Calendar },
-    { name: 'Pesquisa TJMS', path: '/pesquisa-tjms', icon: Sparkles },
   ];
 
   const getInitials = (name: string) => {
