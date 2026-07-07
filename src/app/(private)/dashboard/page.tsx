@@ -90,6 +90,7 @@ interface Processo {
   status: string;
   prazo_entrega: string;
   data_nomeacao: string;
+  imagemEnvelopeUrl?: string | null;
   usuario?: {
     nome: string;
     role: string;
@@ -417,10 +418,22 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {recentProcessos.map((p) => (
-                <div key={p.id} className="bg-card border border-border/80 rounded-2xl overflow-hidden shadow-sm p-4 space-y-3.5 flex flex-col justify-between">
+                <Link 
+                  key={p.id} 
+                  href={`/processos/${p.id}`}
+                  className="bg-card border border-border/80 hover:border-primary/40 hover:bg-muted/5 dark:hover:bg-muted/10 transition-all rounded-2xl overflow-hidden shadow-sm p-4 space-y-3.5 flex flex-col justify-between cursor-pointer"
+                >
                   {/* Decorative Cover Gradient representing course image */}
-                  <div className="w-full h-24 rounded-xl bg-gradient-to-br from-primary/10 to-indigo-500/5 border border-border/40 relative flex items-center justify-center">
-                    <FolderOpen className="w-7 h-7 text-primary/30" />
+                  <div className="w-full h-24 rounded-xl bg-gradient-to-br from-primary/10 to-indigo-500/5 border border-border/40 relative flex items-center justify-center overflow-hidden">
+                    {p.imagemEnvelopeUrl ? (
+                      <img 
+                        src={p.imagemEnvelopeUrl} 
+                        alt="Envelope" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <FolderOpen className="w-7 h-7 text-primary/30" />
+                    )}
                   </div>
 
                   <div className="space-y-1">
@@ -464,7 +477,7 @@ export default function DashboardPage() {
                       </span>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
