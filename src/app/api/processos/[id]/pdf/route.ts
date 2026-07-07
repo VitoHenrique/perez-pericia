@@ -262,6 +262,10 @@ export async function GET(
 
   } catch (error: any) {
     console.error('Erro ao gerar PDF do processo:', error);
-    return NextResponse.json({ error: 'Erro ao gerar arquivo PDF.' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Erro ao gerar arquivo PDF.',
+      message: error.message,
+      stack: error.stack
+    }, { status: 500 });
   }
 }
