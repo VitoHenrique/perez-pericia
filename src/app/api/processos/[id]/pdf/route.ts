@@ -173,12 +173,39 @@ export async function GET(
       if (processo.imagemAssinaturaUrl) {
         doc.fillColor(roxoPrimario).fontSize(11).text('Assinatura Digital / Manuscrita:');
         doc.moveDown(0.5);
-        const signatureLocalPath = path.join(process.cwd(), 'public', processo.imagemAssinaturaUrl);
-        if (fs.existsSync(signatureLocalPath)) {
-          doc.image(signatureLocalPath, { fit: [250, 150], align: 'center' });
-          doc.moveDown(2);
+        
+        let signatureImage: Buffer | string | null = null;
+        if (processo.imagemAssinaturaUrl.startsWith('data:')) {
+          try {
+            const base64Parts = processo.imagemAssinaturaUrl.split(';base64,');
+            if (base64Parts.length === 2) {
+              signatureImage = Buffer.from(base64Parts[1], 'base64');
+            }
+          } catch (e) {
+            console.error('Erro ao converter base64 da assinatura:', e);
+          }
         } else {
-          doc.fillColor(cinzaMedio).text('Imagem de assinatura não disponível localmente.');
+          try {
+            const signatureLocalPath = path.join(process.cwd(), 'public', processo.imagemAssinaturaUrl);
+            if (fs.existsSync(signatureLocalPath)) {
+              signatureImage = signatureLocalPath;
+            }
+          } catch (e) {
+            console.error('Erro ao verificar arquivo da assinatura:', e);
+          }
+        }
+
+        if (signatureImage) {
+          try {
+            doc.image(signatureImage, { fit: [250, 150], align: 'center' });
+            doc.moveDown(2);
+          } catch (imgError) {
+            console.error('Erro ao renderizar imagem da assinatura no PDF:', imgError);
+            doc.fillColor(cinzaMedio).text('Erro ao processar imagem de assinatura.');
+            doc.moveDown(2);
+          }
+        } else {
+          doc.fillColor(cinzaMedio).text('Imagem de assinatura não disponível.');
           doc.moveDown(1);
         }
       }
@@ -186,11 +213,37 @@ export async function GET(
       if (processo.imagemEnvelopeUrl) {
         doc.fillColor(roxoPrimario).fontSize(11).text('Imagem do Envelope:');
         doc.moveDown(0.5);
-        const envelopeLocalPath = path.join(process.cwd(), 'public', processo.imagemEnvelopeUrl);
-        if (fs.existsSync(envelopeLocalPath)) {
-          doc.image(envelopeLocalPath, { fit: [250, 150], align: 'center' });
+
+        let envelopeImage: Buffer | string | null = null;
+        if (processo.imagemEnvelopeUrl.startsWith('data:')) {
+          try {
+            const base64Parts = processo.imagemEnvelopeUrl.split(';base64,');
+            if (base64Parts.length === 2) {
+              envelopeImage = Buffer.from(base64Parts[1], 'base64');
+            }
+          } catch (e) {
+            console.error('Erro ao converter base64 do envelope:', e);
+          }
         } else {
-          doc.fillColor(cinzaMedio).text('Imagem de envelope não disponível localmente.');
+          try {
+            const envelopeLocalPath = path.join(process.cwd(), 'public', processo.imagemEnvelopeUrl);
+            if (fs.existsSync(envelopeLocalPath)) {
+              envelopeImage = envelopeLocalPath;
+            }
+          } catch (e) {
+            console.error('Erro ao verificar arquivo do envelope:', e);
+          }
+        }
+
+        if (envelopeImage) {
+          try {
+            doc.image(envelopeImage, { fit: [250, 150], align: 'center' });
+          } catch (imgError) {
+            console.error('Erro ao renderizar imagem do envelope no PDF:', imgError);
+            doc.fillColor(cinzaMedio).text('Erro ao processar imagem do envelope.');
+          }
+        } else {
+          doc.fillColor(cinzaMedio).text('Imagem de envelope não disponível.');
         }
       }
     }
