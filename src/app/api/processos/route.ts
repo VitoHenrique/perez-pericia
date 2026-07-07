@@ -30,10 +30,10 @@ export async function GET(request: Request) {
 
     if (search) {
       whereClause.OR = [
-        { numero_processo: { contains: search } },
-        { vara_comarca: { contains: search } },
-        { tipo_pericia: { contains: search } },
-        { descricao: { contains: search } },
+        { numero_processo: { contains: search, mode: 'insensitive' } },
+        { descricao: { contains: search, mode: 'insensitive' } },
+        { vara: { nome: { contains: search, mode: 'insensitive' } } },
+        { comarca: { nome: { contains: search, mode: 'insensitive' } } },
       ];
     }
 
@@ -42,6 +42,20 @@ export async function GET(request: Request) {
       include: {
         honorarios: true,
         documentos: true,
+        vara: {
+          include: {
+            comarca: {
+              include: {
+                estado: true
+              }
+            }
+          }
+        },
+        comarca: {
+          include: {
+            estado: true
+          }
+        },
         usuario: {
           select: {
             nome: true,
@@ -61,7 +75,27 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, processos });
+    const tipoPericiaMap: { [key: string]: string } = {
+      GRAFOTECNICA: 'Grafotécnica',
+      PAPILOSCOPICA: 'Papiloscópica',
+      ACIDENTE_TRANSITO: 'Acidente de Trânsito',
+      DIGITAL: 'Digital'
+    };
+
+    const mappedProcessos = processos.map((p) => {
+      let varaComarcaStr = p.vara_comarca;
+      if (p.vara && p.comarca) {
+        varaComarcaStr = `${p.vara.nome} de ${p.comarca.nome}/${p.comarca.estado.sigla}`;
+      }
+
+      return {
+        ...p,
+        vara_comarca: varaComarcaStr,
+        tipo_pericia: tipoPericiaMap[p.tipo_pericia] || p.tipo_pericia
+      };
+    });
+
+    return NextResponse.json({ success: true, processos: mappedProcessos });
   } catch (error: any) {
     console.error('Erro ao listar processos:', error);
     return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
@@ -93,23 +127,34 @@ export async function POST(request: Request) {
       origem,
       subtipo_pericia,
       relatorio_pesquisa,
+      varaId,
+      comarcaId,
+      imagemAssinaturaUrl,
+      imagemEnvelopeUrl,
     } = body;
 
-    const resolvedTipoPericia = tipo_pericia || 'Grafotécnica';
-
-    if (!numero_processo || !vara_comarca || !resolvedTipoPericia || !data_nomeacao || !prazo_entrega) {
+    if (!numero_processo || !data_nomeacao || !prazo_entrega) {
       return NextResponse.json(
         { error: 'Campos obrigatórios ausentes.' },
         { status: 400 }
       );
     }
 
+    const mapTipoPericia = (tipo: string): any => {
+      const t = (tipo || '').toLowerCase();
+      if (t.includes('grafo') || t.includes('grafotecnica')) return 'GRAFOTECNICA';
+      if (t.includes('papilo') || t.includes('papiloscopica')) return 'PAPILOSCOPICA';
+      if (t.includes('acidente') || t.includes('transito') || t.includes('acidente_transito')) return 'ACIDENTE_TRANSITO';
+      if (t.includes('digital')) return 'DIGITAL';
+      return 'GRAFOTECNICA';
+    };
+
     const processo = await prisma.processo.create({
       data: {
         usuario_id: user.id,
         numero_processo,
-        vara_comarca,
-        tipo_pericia: resolvedTipoPericia,
+        vara_comarca: vara_comarca || null,
+        tipo_pericia: mapTipoPericia(tipo_pericia),
         subtipo_pericia: subtipo_pericia || 'grafo',
         origem: origem || 'nomeacao_judicial',
         status: status || 'nomeacao_judicial',
@@ -117,6 +162,10 @@ export async function POST(request: Request) {
         prazo_entrega: new Date(prazo_entrega),
         descricao: descricao || '',
         relatorio_pesquisa: relatorio_pesquisa || null,
+        varaId: varaId || null,
+        comarcaId: comarcaId || null,
+        imagemAssinaturaUrl: imagemAssinaturaUrl || null,
+        imagemEnvelopeUrl: imagemEnvelopeUrl || null,
       },
     });
 
@@ -127,7 +176,8 @@ export async function POST(request: Request) {
       entityId: processo.id,
       details: {
         numero_processo: processo.numero_processo,
-        vara_comarca: processo.vara_comarca,
+        varaId,
+        comarcaId,
       },
     });
 

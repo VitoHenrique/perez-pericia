@@ -173,7 +173,150 @@ async function main() {
     }
   }
 
-  console.log('Semeadura concluída com sucesso!');
+  // 4. Semeadura de Dados Geográficos (Estados, Comarcas e Varas)
+  console.log('Iniciando semeadura de dados geográficos...');
+
+  const estadosData = [
+    {
+      nome: 'São Paulo',
+      sigla: 'SP',
+      comarcas: [
+        'São Paulo', 'Campinas', 'Guarulhos', 'São Bernardo do Campo', 'Santo André',
+        'Osasco', 'São José dos Campos', 'Ribeirão Preto', 'Sorocaba', 'Mauá',
+        'São José do Rio Preto', 'Mogi das Cruzes', 'Santos', 'Diadema', 'Jundiaí',
+        'Piracicaba', 'Bauru', 'Itaquaquecetuba', 'Franca', 'Carapicuíba'
+      ]
+    },
+    {
+      nome: 'Paraná',
+      sigla: 'PR',
+      comarcas: [
+        'Curitiba', 'Londrina', 'Maringá', 'Ponta Grossa', 'Cascavel',
+        'São José dos Pinhais', 'Foz do Iguaçu', 'Colombo', 'Guarapuava', 'Paranaguá',
+        'Araucária', 'Toledo', 'Apucarana', 'Pinhais', 'Campo Largo'
+      ]
+    },
+    {
+      nome: 'Mato Grosso do Sul',
+      sigla: 'MS',
+      comarcas: [
+        'Campo Grande', 'Dourados', 'Três Lagoas', 'Corumbá', 'Ponta Porã',
+        'Sidrolândia', 'Naviraí', 'Nova Andradina', 'Aquidauana', 'Maracaju'
+      ]
+    },
+    {
+      nome: 'Goiás',
+      sigla: 'GO',
+      comarcas: [
+        'Goiânia', 'Aparecida de Goiânia', 'Anápolis', 'Rio Verde', 'Luziânia',
+        'Águas Lindas de Goiás', 'Valparaíso de Goiás', 'Trindade', 'Senador Canedo', 'Catalão'
+      ]
+    }
+  ];
+
+  for (const est of estadosData) {
+    console.log(`Semeando estado ${est.nome}...`);
+    const estado = await prisma.estado.upsert({
+      where: { sigla: est.sigla },
+      update: { nome: est.nome },
+      create: { nome: est.nome, sigla: est.sigla }
+    });
+
+    for (const comNome of est.comarcas) {
+      const comarca = await prisma.comarca.upsert({
+        where: {
+          nome_estadoId: {
+            nome: comNome,
+            estadoId: estado.id
+          }
+        },
+        update: {},
+        create: {
+          nome: comNome,
+          estadoId: estado.id
+        }
+      });
+
+      // Gerar 30 varas para a comarca
+      // Vamos verificar se já existem varas para esta comarca para não reinserir
+      const existingVarasCount = await prisma.vara.count({
+        where: { comarcaId: comarca.id }
+      });
+
+      if (existingVarasCount < 30) {
+        console.log(`Gerando 30 varas cíveis para a comarca de ${comNome}...`);
+        const varasToCreate = Array.from({ length: 30 }, (_, i) => ({
+          nome: `${i + 1}ª Vara Cível`,
+          comarcaId: comarca.id
+        }));
+
+        await prisma.vara.createMany({
+          data: varasToCreate,
+          skipDuplicates: true
+        });
+      }
+    }
+  }
+
+  // 5. Migração de dados de Processos (mapeando vara_comarca antiga para vara e comarca estruturadas)
+  console.log('Migrando processos existentes para o novo esquema geográfico estruturado...');
+  const processos = await prisma.processo.findMany();
+  
+  // Mapeador de tipo_pericia de string para enum
+  const mapTipoPericia = (tipo: string): any => {
+    const t = (tipo || '').toLowerCase();
+    if (t.includes('grafo')) return 'GRAFOTECNICA';
+    if (t.includes('papilo')) return 'PAPILOSCOPICA';
+    if (t.includes('acidente') || t.includes('transito')) return 'ACIDENTE_TRANSITO';
+    if (t.includes('digital')) return 'DIGITAL';
+    return 'GRAFOTECNICA';
+  };
+
+  // Carrega todas as comarcas com suas varas para fazer correspondência na memória
+  const allComarcas = await prisma.comarca.findMany({
+    include: { varas: true }
+  });
+
+  for (const proc of processos) {
+    let matchedComarca: any = null;
+    let matchedVara: any = null;
+
+    if (proc.vara_comarca) {
+      const textToSearch = proc.vara_comarca.toLowerCase();
+      // Encontra a comarca no texto do campo antigo
+      for (const comarca of allComarcas) {
+        if (textToSearch.includes(comarca.nome.toLowerCase())) {
+          matchedComarca = comarca;
+          break;
+        }
+      }
+
+      // Se encontrou comarca, tenta achar o número da vara (ex: "3ª Vara" ou "Vara 3")
+      if (matchedComarca) {
+        const numberMatch = proc.vara_comarca.match(/(\d+)/);
+        const varaNumber = numberMatch ? parseInt(numberMatch[1]) : 1;
+        matchedVara = matchedComarca.varas.find((v: any) => v.nome.startsWith(`${varaNumber}ª`)) || matchedComarca.varas[0];
+      }
+    }
+
+    // Se nenhuma comarca foi identificada, associa a Curitiba/PR (ou a primeira cadastrada) como fallback
+    if (!matchedComarca) {
+      matchedComarca = allComarcas.find(c => c.nome === 'Curitiba') || allComarcas[0];
+      matchedVara = matchedComarca?.varas[0] || null;
+    }
+
+    await prisma.processo.update({
+      where: { id: proc.id },
+      data: {
+        comarcaId: matchedComarca ? matchedComarca.id : undefined,
+        varaId: matchedVara ? matchedVara.id : undefined,
+        tipo_pericia: mapTipoPericia(proc.tipo_pericia)
+      }
+    });
+    console.log(`Processo ${proc.numero_processo} migrado para Comarca: ${matchedComarca?.nome}, Vara: ${matchedVara?.nome}`);
+  }
+
+  console.log('Semeadura e migração concluídas com sucesso!');
 }
 
 main()

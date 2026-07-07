@@ -43,6 +43,13 @@ enum StatusPagamento {
   pago
 }
 
+enum TipoPericia {
+  GRAFOTECNICA
+  PAPILOSCOPICA
+  ACIDENTE_TRANSITO
+  DIGITAL
+}
+
 model Usuario {
   id           String        @id @default(uuid())
   nome         String
@@ -58,22 +65,28 @@ model Usuario {
 }
 
 model Processo {
-  id                 String          @id @default(uuid())
-  usuario_id         String
-  usuario            Usuario         @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
-  numero_processo    String
-  vara_comarca       String
-  tipo_pericia       String          @default("Grafotécnica")
-  subtipo_pericia    SubtipoPericia  @default(grafo)
-  origem             Origem          @default(nomeacao_judicial)
-  status             Status          @default(nomeacao_judicial)
-  data_nomeacao      DateTime
-  prazo_entrega      DateTime
-  descricao          String?
-  relatorio_pesquisa String?
-  honorarios         Honorario[]
-  documentos         Documento[]
-  vistorias          Vistoria[]
+  id                  String          @id @default(uuid())
+  usuario_id          String
+  usuario             Usuario         @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  numero_processo     String
+  vara_comarca        String?
+  tipo_pericia        TipoPericia     @default(GRAFOTECNICA)
+  subtipo_pericia     SubtipoPericia  @default(grafo)
+  origem              Origem          @default(nomeacao_judicial)
+  status              Status          @default(nomeacao_judicial)
+  data_nomeacao       DateTime
+  prazo_entrega       DateTime
+  descricao           String?
+  relatorio_pesquisa  String?
+  imagemAssinaturaUrl String?
+  imagemEnvelopeUrl   String?
+  varaId              String?
+  comarcaId           String?
+  vara                Vara?           @relation(fields: [varaId], references: [id], onDelete: SetNull)
+  comarca             Comarca?        @relation(fields: [comarcaId], references: [id], onDelete: SetNull)
+  honorarios          Honorario[]
+  documentos          Documento[]
+  vistorias           Vistoria[]
 }
 
 model Honorario {
@@ -148,6 +161,38 @@ model CargoPermissao {
 
   @@unique([cargoId, permissaoId])
   @@map("cargo_permissoes")
+}
+
+model Estado {
+  id        String      @id @default(cuid())
+  nome      String      @unique // Ex: "São Paulo", "Paraná"
+  sigla     String      @unique // Ex: "SP", "PR"
+  comarcas  Comarca[]
+
+  @@map("estados")
+}
+
+model Comarca {
+  id        String      @id @default(cuid())
+  nome      String      // Nome do município/comarca (Ex: "São Paulo", "Curitiba")
+  estadoId  String
+  estado    Estado      @relation(fields: [estadoId], references: [id], onDelete: Cascade)
+  varas     Vara[]
+  processos Processo[]
+
+  @@unique([nome, estadoId])
+  @@map("comarcas")
+}
+
+model Vara {
+  id          String      @id @default(cuid())
+  nome        String      // Ex: "1ª Vara Cível", "Vara da Fazenda Pública"
+  comarcaId   String
+  comarca     Comarca     @relation(fields: [comarcaId], references: [id], onDelete: Cascade)
+  processos   Processo[]
+
+  @@unique([nome, comarcaId])
+  @@map("varas")
 }
 
 

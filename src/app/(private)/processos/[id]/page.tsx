@@ -21,7 +21,8 @@ import {
   Plus, 
   AlertTriangle,
   FolderOpen,
-  X
+  X,
+  Check
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -54,6 +55,10 @@ interface Processo {
   origem: string;
   subtipo_pericia: string;
   relatorio_pesquisa: string | null;
+  imagemAssinaturaUrl: string | null;
+  imagemEnvelopeUrl: string | null;
+  varaId: string | null;
+  comarcaId: string | null;
 }
 
 export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: string }> }) {
@@ -79,7 +84,21 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
   const [subtipoPericia, setSubtipoPericia] = useState('');
   const [relatorioPesquisa, setRelatorioPesquisa] = useState('');
 
-  // Upload state
+  // Geografia
+  const [estados, setEstados] = useState<any[]>([]);
+  const [selectedEstadoId, setSelectedEstadoId] = useState('');
+  const [comarcas, setComarcas] = useState<any[]>([]);
+  const [selectedComarcaId, setSelectedComarcaId] = useState('');
+  const [varas, setVaras] = useState<any[]>([]);
+  const [selectedVaraId, setSelectedVaraId] = useState('');
+
+  // Imagens
+  const [imagemAssinaturaUrl, setImagemAssinaturaUrl] = useState('');
+  const [imagemEnvelopeUrl, setImagemEnvelopeUrl] = useState('');
+  const [uploadingSignature, setUploadingSignature] = useState(false);
+  const [uploadingEnvelope, setUploadingEnvelope] = useState(false);
+
+  // Upload state (GED)
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -96,6 +115,22 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
   const [ehValorRecebido, setEhValorRecebido] = useState('');
   const [ehStatus, setEhStatus] = useState('');
   const [ehLoading, setEhLoading] = useState(false);
+
+  useEffect(() => {
+    fetchGeografia();
+  }, []);
+
+  const fetchGeografia = async () => {
+    try {
+      const res = await fetch('/api/geografia');
+      const data = await res.json();
+      if (data.success) {
+        setEstados(data.estados || []);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar estados:', err);
+    }
+  };
 
   useEffect(() => {
     fetchProcessoDetails();
@@ -122,6 +157,10 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
         setOrigem(data.processo.origem || 'nomeacao_judicial');
         setSubtipoPericia(data.processo.subtipo_pericia || 'grafo');
         setRelatorioPesquisa(data.processo.relatorio_pesquisa || '');
+        setSelectedVaraId(data.processo.varaId || '');
+        setSelectedComarcaId(data.processo.comarcaId || '');
+        setImagemAssinaturaUrl(data.processo.imagemAssinaturaUrl || '');
+        setImagemEnvelopeUrl(data.processo.imagemEnvelopeUrl || '');
       }
     } catch (err: any) {
       console.error(err);
@@ -129,6 +168,96 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
     } finally {
       setLoading(false);
     }
+  };
+
+  // Sincronizar geografia do processo com os dropdowns quando estados forem carregados
+  useEffect(() => {
+    if (processo && estados.length > 0) {
+      const comarcaId = processo.comarcaId;
+      if (comarcaId) {
+        for (const est of estados) {
+          const com = est.comarcas.find((c: any) => c.id === comarcaId);
+          if (com) {
+            setSelectedEstadoId(est.id);
+            setComarcas(est.comarcas);
+            setSelectedComarcaId(comarcaId);
+            
+            fetch(`/api/geografia?comarcaId=${comarcaId}`)
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  setVaras(data.varas || []);
+                  setSelectedVaraId(processo.varaId || '');
+                }
+              });
+            break;
+          }
+        }
+      }
+    }
+  }, [processo, estados]);
+
+  const handleEstadoChange = (estadoId: string) => {
+    setSelectedEstadoId(estadoId);
+    setSelectedComarcaId('');
+    setVaras([]);
+    setSelectedVaraId('');
+    
+    const est = estados.find(e => e.id === estadoId);
+    setComarcas(est ? est.comarcas : []);
+  };
+
+  const handleComarcaChange = async (comarcaId: string) => {
+    setSelectedComarcaId(comarcaId);
+    setSelectedVaraId('');
+    setVaras([]);
+    
+    if (!comarcaId) return;
+
+    try {
+      const res = await fetch(`/api/geografia?comarcaId=${comarcaId}`);
+      const data = await res.json();
+      if (data.success) {
+        setVaras(data.varas || []);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar varas:', err);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'signature' | 'envelope') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === 'signature') setUploadingSignature(true);
+    else setUploadingEnvelope(true);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (type === 'signature') setImagemAssinaturaUrl(data.url);
+        else setImagemEnvelopeUrl(data.url);
+      } else {
+        showAlert(data.error || 'Erro ao fazer upload da imagem.');
+      }
+    } catch (err) {
+      console.error('Erro no upload:', err);
+      showAlert('Erro ao conectar ao servidor para upload.');
+    } finally {
+      if (type === 'signature') setUploadingSignature(false);
+      else setUploadingEnvelope(false);
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    window.open(`/api/processos/${processoId}/pdf`, '_blank');
   };
 
   const handleUpdateProcess = async (e: React.FormEvent) => {
@@ -142,7 +271,6 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           numero_processo: numeroProcesso,
-          vara_comarca: varaComarca,
           tipo_pericia: tipoPericia,
           status,
           data_nomeacao: dataNomeacao,
@@ -151,6 +279,10 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
           origem,
           subtipo_pericia: subtipoPericia,
           relatorio_pesquisa: origem === 'pesquisa_dje' ? relatorioPesquisa : null,
+          varaId: selectedVaraId || null,
+          comarcaId: selectedComarcaId || null,
+          imagemAssinaturaUrl: imagemAssinaturaUrl || null,
+          imagemEnvelopeUrl: imagemEnvelopeUrl || null,
         }),
       });
 
@@ -356,6 +488,14 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
 
         <div className="flex items-center gap-2">
           <button
+            onClick={handleDownloadPDF}
+            className="flex items-center gap-1.5 px-3 py-2 bg-card border border-border/80 hover:bg-background rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5 text-purple-400" />
+            Gerar PDF
+          </button>
+
+          <button
             onClick={() => setEditMode(!editMode)}
             className="flex items-center gap-1.5 px-3 py-2 bg-card border border-border/80 hover:bg-background rounded-lg text-xs font-bold text-muted-foreground hover:text-foreground transition-all cursor-pointer"
           >
@@ -380,7 +520,7 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
           <h3 className="font-outfit text-xs font-extrabold mb-5 uppercase tracking-wider text-foreground">Editar Ficha cadastral</h3>
           <form onSubmit={handleUpdateProcess} className="space-y-5 text-xs font-semibold text-muted-foreground">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div className="md:col-span-2">
                 <label className="block mb-1.5 text-foreground">Número do Processo</label>
                 <input
                   type="text"
@@ -392,14 +532,50 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
               </div>
 
               <div>
-                <label className="block mb-1.5 text-foreground">Vara e Comarca</label>
-                <input
-                  type="text"
+                <label className="block mb-1.5 text-foreground">Estado *</label>
+                <select
                   required
-                  value={varaComarca}
-                  onChange={(e) => setVaraComarca(e.target.value)}
-                  className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-medium"
-                />
+                  value={selectedEstadoId}
+                  onChange={(e) => handleEstadoChange(e.target.value)}
+                  className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-bold cursor-pointer"
+                >
+                  <option value="">Selecione o Estado</option>
+                  {estados.map((est) => (
+                    <option key={est.id} value={est.id}>{est.nome} ({est.sigla})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block mb-1.5 text-foreground">Comarca *</label>
+                <select
+                  required
+                  disabled={!selectedEstadoId}
+                  value={selectedComarcaId}
+                  onChange={(e) => handleComarcaChange(e.target.value)}
+                  className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-bold cursor-pointer disabled:opacity-50"
+                >
+                  <option value="">Selecione a Comarca</option>
+                  {comarcas.map((com) => (
+                    <option key={com.id} value={com.id}>{com.nome}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block mb-1.5 text-foreground">Vara *</label>
+                <select
+                  required
+                  disabled={!selectedComarcaId}
+                  value={selectedVaraId}
+                  onChange={(e) => setSelectedVaraId(e.target.value)}
+                  className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-bold cursor-pointer disabled:opacity-50"
+                >
+                  <option value="">Selecione a Vara</option>
+                  {varas.map((v) => (
+                    <option key={v.id} value={v.id}>{v.nome}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -423,12 +599,16 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
 
               <div>
                 <label className="block mb-1.5 text-foreground">Tipo de Perícia</label>
-                <input
-                  type="text"
-                  disabled
-                  value="Grafotécnica"
-                  className="block w-full px-3.5 py-2 bg-muted/40 border border-border/85 rounded-lg text-muted-foreground font-medium select-none"
-                />
+                <select
+                  value={tipoPericia}
+                  onChange={(e) => setTipoPericia(e.target.value)}
+                  className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-bold"
+                >
+                  <option value="GRAFOTECNICA">Grafotécnica</option>
+                  <option value="PAPILOSCOPICA">Papiloscópica</option>
+                  <option value="ACIDENTE_TRANSITO">Acidente de Trânsito</option>
+                  <option value="DIGITAL">Digital</option>
+                </select>
               </div>
 
               <div>
@@ -484,6 +664,79 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
                   onChange={(e) => setPrazoEntrega(e.target.value)}
                   className="block w-full px-3.5 py-2 bg-background border border-border/80 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-foreground font-medium"
                 />
+              </div>
+            </div>
+
+            {/* Imagens do Processo (Edição) */}
+            <div className="pt-3 border-t border-border/50 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Imagem de Assinatura */}
+              <div className="bg-background/30 border border-border/80 p-3 rounded-lg space-y-2">
+                <span className="block text-foreground font-bold">Imagem da Assinatura</span>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1 px-2.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-md cursor-pointer transition-colors text-[9px] font-bold">
+                    {uploadingSignature ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="w-3 h-3" />
+                    )}
+                    Upload Assinatura
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'signature')}
+                      className="hidden"
+                    />
+                  </label>
+                  {imagemAssinaturaUrl && (
+                    <span className="text-[9px] text-emerald-500 flex items-center gap-0.5">
+                      <Check className="w-3 h-3" /> Carregada
+                    </span>
+                  )}
+                </div>
+                {imagemAssinaturaUrl && (
+                  <div className="relative w-28 h-16 border border-border rounded overflow-hidden bg-white/50 p-0.5 flex items-center justify-center">
+                    <img
+                      src={imagemAssinaturaUrl}
+                      alt="Assinatura"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Imagem de Envelope */}
+              <div className="bg-background/30 border border-border/80 p-3 rounded-lg space-y-2">
+                <span className="block text-foreground font-bold">Imagem do Envelope</span>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1 px-2.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-md cursor-pointer transition-colors text-[9px] font-bold">
+                    {uploadingEnvelope ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="w-3 h-3" />
+                    )}
+                    Upload Envelope
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'envelope')}
+                      className="hidden"
+                    />
+                  </label>
+                  {imagemEnvelopeUrl && (
+                    <span className="text-[9px] text-emerald-500 flex items-center gap-0.5">
+                      <Check className="w-3 h-3" /> Carregada
+                    </span>
+                  )}
+                </div>
+                {imagemEnvelopeUrl && (
+                  <div className="relative w-28 h-16 border border-border rounded overflow-hidden bg-white/50 p-0.5 flex items-center justify-center">
+                    <img
+                      src={imagemEnvelopeUrl}
+                      alt="Envelope"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -588,6 +841,31 @@ export default function ProcessoDetalhePage({ params }: { params: Promise<{ id: 
               {processo.descricao || 'Nenhum detalhe adicional informado.'}
             </p>
           </div>
+
+          {/* Imagens do Processo (Assinatura e Envelope) */}
+          {(processo.imagemAssinaturaUrl || processo.imagemEnvelopeUrl) && (
+            <div className="border-t border-border/60 pt-5 space-y-4">
+              <h3 className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">Imagens Cadastradas</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {processo.imagemAssinaturaUrl && (
+                  <div className="bg-background/50 border border-border/50 p-4 rounded-lg space-y-2">
+                    <span className="text-[10px] font-extrabold text-foreground uppercase block">Assinatura</span>
+                    <div className="h-32 bg-white/70 rounded-md p-2 flex items-center justify-center border border-border/40">
+                      <img src={processo.imagemAssinaturaUrl} alt="Assinatura" className="max-h-full max-w-full object-contain" />
+                    </div>
+                  </div>
+                )}
+                {processo.imagemEnvelopeUrl && (
+                  <div className="bg-background/50 border border-border/50 p-4 rounded-lg space-y-2">
+                    <span className="text-[10px] font-extrabold text-foreground uppercase block">Envelope</span>
+                    <div className="h-32 bg-white/70 rounded-md p-2 flex items-center justify-center border border-border/40">
+                      <img src={processo.imagemEnvelopeUrl} alt="Envelope" className="max-h-full max-w-full object-contain" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

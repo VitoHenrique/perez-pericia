@@ -24,6 +24,20 @@ export async function GET(
       include: {
         honorarios: true,
         documentos: true,
+        vara: {
+          include: {
+            comarca: {
+              include: {
+                estado: true
+              }
+            }
+          }
+        },
+        comarca: {
+          include: {
+            estado: true
+          }
+        },
         usuario: {
           select: {
             nome: true,
@@ -42,7 +56,25 @@ export async function GET(
       return NextResponse.json({ error: 'Acesso negado' }, { status: 403 });
     }
 
-    return NextResponse.json({ success: true, processo });
+    const tipoPericiaMap: { [key: string]: string } = {
+      GRAFOTECNICA: 'Grafotécnica',
+      PAPILOSCOPICA: 'Papiloscópica',
+      ACIDENTE_TRANSITO: 'Acidente de Trânsito',
+      DIGITAL: 'Digital'
+    };
+
+    let varaComarcaStr = processo.vara_comarca;
+    if (processo.vara && processo.comarca) {
+      varaComarcaStr = `${processo.vara.nome} de ${processo.comarca.nome}/${processo.comarca.estado.sigla}`;
+    }
+
+    const mappedProcesso = {
+      ...processo,
+      vara_comarca: varaComarcaStr,
+      tipo_pericia: tipoPericiaMap[processo.tipo_pericia] || processo.tipo_pericia
+    };
+
+    return NextResponse.json({ success: true, processo: mappedProcesso });
   } catch (error: any) {
     console.error('Erro ao buscar processo:', error);
     return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
@@ -89,12 +121,25 @@ export async function PUT(
       origem,
       subtipo_pericia,
       relatorio_pesquisa,
+      varaId,
+      comarcaId,
+      imagemAssinaturaUrl,
+      imagemEnvelopeUrl,
     } = body;
+
+    const mapTipoPericia = (tipo: string): any => {
+      const t = (tipo || '').toLowerCase();
+      if (t.includes('grafo') || t.includes('grafotecnica')) return 'GRAFOTECNICA';
+      if (t.includes('papilo') || t.includes('papiloscopica')) return 'PAPILOSCOPICA';
+      if (t.includes('acidente') || t.includes('transito') || t.includes('acidente_transito')) return 'ACIDENTE_TRANSITO';
+      if (t.includes('digital')) return 'DIGITAL';
+      return 'GRAFOTECNICA';
+    };
 
     const updatedData: any = {};
     if (numero_processo !== undefined) updatedData.numero_processo = numero_processo;
     if (vara_comarca !== undefined) updatedData.vara_comarca = vara_comarca;
-    if (tipo_pericia !== undefined) updatedData.tipo_pericia = tipo_pericia;
+    if (tipo_pericia !== undefined) updatedData.tipo_pericia = mapTipoPericia(tipo_pericia);
     if (status !== undefined) updatedData.status = status;
     if (data_nomeacao !== undefined) updatedData.data_nomeacao = new Date(data_nomeacao);
     if (prazo_entrega !== undefined) updatedData.prazo_entrega = new Date(prazo_entrega);
@@ -102,6 +147,10 @@ export async function PUT(
     if (origem !== undefined) updatedData.origem = origem;
     if (subtipo_pericia !== undefined) updatedData.subtipo_pericia = subtipo_pericia;
     if (relatorio_pesquisa !== undefined) updatedData.relatorio_pesquisa = relatorio_pesquisa;
+    if (varaId !== undefined) updatedData.varaId = varaId || null;
+    if (comarcaId !== undefined) updatedData.comarcaId = comarcaId || null;
+    if (imagemAssinaturaUrl !== undefined) updatedData.imagemAssinaturaUrl = imagemAssinaturaUrl || null;
+    if (imagemEnvelopeUrl !== undefined) updatedData.imagemEnvelopeUrl = imagemEnvelopeUrl || null;
 
     const updatedProcesso = await prisma.processo.update({
       where: { id },
@@ -109,6 +158,20 @@ export async function PUT(
       include: {
         honorarios: true,
         documentos: true,
+        vara: {
+          include: {
+            comarca: {
+              include: {
+                estado: true
+              }
+            }
+          }
+        },
+        comarca: {
+          include: {
+            estado: true
+          }
+        },
       },
     });
 
@@ -127,7 +190,25 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ success: true, processo: updatedProcesso });
+    const tipoPericiaMap: { [key: string]: string } = {
+      GRAFOTECNICA: 'Grafotécnica',
+      PAPILOSCOPICA: 'Papiloscópica',
+      ACIDENTE_TRANSITO: 'Acidente de Trânsito',
+      DIGITAL: 'Digital'
+    };
+
+    let varaComarcaStr = updatedProcesso.vara_comarca;
+    if (updatedProcesso.vara && updatedProcesso.comarca) {
+      varaComarcaStr = `${updatedProcesso.vara.nome} de ${updatedProcesso.comarca.nome}/${updatedProcesso.comarca.estado.sigla}`;
+    }
+
+    const mappedUpdatedProcesso = {
+      ...updatedProcesso,
+      vara_comarca: varaComarcaStr,
+      tipo_pericia: tipoPericiaMap[updatedProcesso.tipo_pericia] || updatedProcesso.tipo_pericia
+    };
+
+    return NextResponse.json({ success: true, processo: mappedUpdatedProcesso });
   } catch (error: any) {
     console.error('Erro ao atualizar processo:', error);
     return NextResponse.json({ error: 'Erro interno do servidor.' }, { status: 500 });
